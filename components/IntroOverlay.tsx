@@ -46,10 +46,21 @@ export default function IntroOverlay() {
         isExiting ? 'opacity-0 pointer-events-none' : 'opacity-100'
       }`}
       style={{
-        background: 'linear-gradient(to bottom, #0f172a, #1e293b)',
+        background: `
+          radial-gradient(ellipse at center top, rgba(0, 212, 255, 0.08) 0%, transparent 50%),
+          radial-gradient(ellipse at center bottom, rgba(139, 92, 246, 0.05) 0%, transparent 50%),
+          linear-gradient(135deg, 
+            #0a0e1a 0%, 
+            #0f1726 25%,
+            #050710 50%,
+            #0a0e1a 75%,
+            #050710 100%)
+        `,
+        backgroundSize: '100% 100%, 100% 100%, 200% 200%',
+        backgroundAttachment: 'fixed, fixed, fixed'
       }}
     >
-      <div className="text-center px-6 max-w-3xl">
+      <div className="text-center px-6 max-w-3xl glass-enhanced rounded-2xl p-8">
         <h1 className="text-6xl md:text-7xl font-bold text-white mb-6">
           BioTender
         </h1>

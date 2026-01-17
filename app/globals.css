@@ -1,8 +1,15 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0f172a;
+  --background: #0a0e1a;
+  --background-deep: #050710;
+  --background-accent: #0f1726;
+  --background-glass: rgba(15, 23, 38, 0.6);
   --foreground: #e2e8f0;
+  --primary-cyan: #00d4ff;
+  --primary-purple: #8b5cf6;
+  --primary-blue: #3b82f6;
+  --accent-glow: rgba(0, 212, 255, 0.15);
 }
 
 @theme inline {
@@ -12,31 +19,88 @@
 
 body {
   background: var(--background);
+  background-image: 
+    radial-gradient(circle at 20% 50%, var(--background-accent) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, var(--background-deep) 0%, transparent 60%),
+    radial-gradient(circle at 40% 80%, var(--background) 0%, transparent 50%);
+  background-attachment: fixed;
+  background-size: 100% 100%, 100% 100%, 100% 100%;
   color: var(--foreground);
   font-family: system-ui, -apple-system, sans-serif;
+  min-height: 100vh;
 }
 
-/* 玻璃拟态 */
+/* 玻璃拟态 - 科技感生物风格 */
 .glass {
-  background: rgba(30, 41, 59, 0.7);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(6, 182, 212, 0.2);
+  background: var(--background-glass);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.3),
+    0 2px 4px -1px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
-/* 滚动条样式 */
+/* 增强玻璃效果 - 用于重要组件 */
+.glass-enhanced {
+  background: linear-gradient(135deg, 
+    rgba(15, 23, 38, 0.8) 0%, 
+    rgba(10, 14, 26, 0.6) 100%);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 212, 255, 0.4);
+  box-shadow: 
+    0 8px 32px -8px rgba(0, 212, 255, 0.2),
+    0 4px 16px -4px rgba(139, 92, 246, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* 滚动条样式 - 科技感 */
 ::-webkit-scrollbar {
   width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.5);
+  background: rgba(10, 14, 26, 0.8);
+  border: 1px solid rgba(0, 212, 255, 0.1);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(6, 182, 212, 0.3);
+  background: linear-gradient(180deg, var(--primary-cyan), var(--primary-purple));
   border-radius: 4px;
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(6, 182, 212, 0.5);
+  background: linear-gradient(180deg, #00e5ff, #a78bfa);
+  box-shadow: 0 0 15px rgba(0, 212, 255, 0.5);
+}
+
+/* 科技感光晕效果 */
+.glow-cyan {
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.3),
+              0 0 40px rgba(0, 212, 255, 0.1);
+}
+
+.glow-purple {
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.3),
+              0 0 40px rgba(139, 92, 246, 0.1);
+}
+
+/* 生物感渐变背景 */
+.bio-gradient {
+  background: linear-gradient(135deg, 
+    var(--background-deep) 0%, 
+    var(--background) 25%,
+    var(--background-accent) 50%,
+    var(--background) 75%,
+    var(--background-deep) 100%);
+  background-size: 200% 200%;
+  animation: bioGradient 15s ease infinite;
+}
+
+@keyframes bioGradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }

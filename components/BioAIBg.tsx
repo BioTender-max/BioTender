@@ -69,10 +69,26 @@ export default function BioAIBg() {
           if (node.y < 0 || node.y > canvas.height) node.vy *= -1;
         }
 
-        // 绘制节点
+        // 绘制节点 - 生物感荧光效果
         ctx.beginPath();
         ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(6, 182, 212, 0.6)';
+        
+        // 创建渐变填充
+        const gradient = ctx.createRadialGradient(
+          node.x, node.y, 0,
+          node.x, node.y, node.radius * 3
+        );
+        gradient.addColorStop(0, 'rgba(0, 212, 255, 0.8)');
+        gradient.addColorStop(0.7, 'rgba(139, 92, 246, 0.4)');
+        gradient.addColorStop(1, 'rgba(139, 92, 246, 0)');
+        
+        ctx.fillStyle = gradient;
+        ctx.fill();
+        
+        // 添加光晕效果
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, node.radius * 2, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(0, 212, 255, 0.1)';
         ctx.fill();
       });
 
@@ -85,13 +101,31 @@ export default function BioAIBg() {
           const distance = Math.sqrt(dx * dx + dy * dy);
 
           if (distance < maxDistance) {
-            const opacity = (1 - distance / maxDistance) * 0.3;
+            const opacity = (1 - distance / maxDistance) * 0.4;
+            const gradient = ctx.createLinearGradient(
+              nodes[i].x, nodes[i].y,
+              nodes[j].x, nodes[j].y
+            );
+            gradient.addColorStop(0, `rgba(0, 212, 255, ${opacity})`);
+            gradient.addColorStop(0.5, `rgba(139, 92, 246, ${opacity * 0.7})`);
+            gradient.addColorStop(1, `rgba(0, 212, 255, ${opacity})`);
+            
             ctx.beginPath();
             ctx.moveTo(nodes[i].x, nodes[i].y);
             ctx.lineTo(nodes[j].x, nodes[j].y);
-            ctx.strokeStyle = `rgba(6, 182, 212, ${opacity})`;
-            ctx.lineWidth = 1;
+            ctx.strokeStyle = gradient;
+            ctx.lineWidth = 1.5;
             ctx.stroke();
+            
+            // 添加连线的光晕效果
+            if (opacity > 0.2) {
+              ctx.beginPath();
+              ctx.moveTo(nodes[i].x, nodes[i].y);
+              ctx.lineTo(nodes[j].x, nodes[j].y);
+              ctx.strokeStyle = `rgba(0, 212, 255, ${opacity * 0.3})`;
+              ctx.lineWidth = 3;
+              ctx.stroke();
+            }
           }
         }
       }
@@ -113,7 +147,20 @@ export default function BioAIBg() {
     <canvas
       ref={canvasRef}
       className="fixed inset-0 -z-10"
-      style={{ background: 'linear-gradient(to bottom, #0f172a, #1e293b)' }}
+      style={{ 
+        background: `
+          radial-gradient(ellipse at center top, rgba(0, 212, 255, 0.03) 0%, transparent 50%),
+          radial-gradient(ellipse at center bottom, rgba(139, 92, 246, 0.02) 0%, transparent 50%),
+          linear-gradient(135deg, 
+            #0a0e1a 0%, 
+            #0f1726 25%,
+            #050710 50%,
+            #0a0e1a 75%,
+            #050710 100%)
+        `,
+        backgroundSize: '100% 100%, 100% 100%, 200% 200%',
+        backgroundAttachment: 'fixed, fixed, fixed'
+      }}
       aria-hidden="true"
     />
   );

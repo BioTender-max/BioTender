@@ -28,6 +28,12 @@ export default function ToolsPage() {
       path: '/tools/deg-interpreter',
       icon: '📊',
     },
+    {
+      title: 'Expression PCA/UMAP Viewer',
+      description: '纯前端基因表达数据降维可视化，支持CSV/TSV，交互式散点图',
+      path: '/tools/pca-umap-viewer',
+      icon: '📈',
+    },
   ];
 
   return (

@@ -1,5 +1,11 @@
 [
   {
+    "category": "AI Skills / 技能导航",
+    "slug": "ai-skills",
+    "title": "awesome-ai4bio-skills — 47个计算生物 Skills for AI Agents",
+    "url": "https://biotender.online/awesome-ai4bio-skills/"
+  },
+  {
     "category": "教程/系列",
     "slug": "jiao-cheng-xi-lie",
     "title": "Alphafold3 conda安装",

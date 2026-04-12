@@ -5074,5 +5074,17 @@
     "slug": "m-d-dan-bai-dong-tai-l-l-m",
     "title": "不止结构预测！下一代AI平台CryoPhold：结构、动态和功能预测一次性完成！！",
     "url": "https://mp.weixin.qq.com/s/56H_uBnQBM3CXq2S3aCCnw?token=194211054&lang=zh_CN"
+  },
+  {
+    "category": "蛋白设计",
+    "slug": "protein-stability",
+    "title": "ProteinStability — 纯 NumPy ΔΔG 预测与饱和突变扫描",
+    "url": "https://biotender.online/ProteinStability/"
+  },
+  {
+    "category": "基因组大模型",
+    "slug": "hic-analysis",
+    "title": "HiCAnalysis — 纯 NumPy/SciPy Hi-C 染色质 3D 基因组分析引擎",
+    "url": "https://biotender.online/HiCAnalysis/"
   }
 ]

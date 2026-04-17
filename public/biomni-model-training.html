@@ -484,6 +484,15 @@
       background: #245c42;
       transform: translateY(-1px);
     }
+    .apply-btn {
+      background: transparent;
+      color: var(--accent);
+      border: 1.5px solid var(--accent);
+    }
+    .apply-btn:hover {
+      background: var(--accent-pale);
+      transform: translateY(-1px);
+    }
 
     /* ── FADE IN ── */
     @keyframes fadeUp {
@@ -525,9 +534,14 @@
       <span class="value">Beta / Early Preview</span>
     </div>
   </div>
-  <a class="read-orig" href="https://phylo.bio/blog/ai-agents-build-ai-biology-models" target="_blank" rel="noopener">
-    阅读原文 ↗
-  </a>
+  <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:28px;">
+    <a class="read-orig" href="https://phylo.bio/blog/ai-agents-build-ai-biology-models" target="_blank" rel="noopener">
+      阅读原文 ↗
+    </a>
+    <a class="read-orig apply-btn" href="https://forms.gle/1yhCP6Vrc12DaS4q6" target="_blank" rel="noopener">
+      申请 Beta 内测 →
+    </a>
+  </div>
 </div>
 
 <div class="content">

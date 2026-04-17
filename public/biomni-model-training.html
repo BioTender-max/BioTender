@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Biomni Lab：AI Agent 自动训练生物学模型</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;1,9..144,300&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f7f5f0;
+      --bg-card: #ffffff;
+      --bg-muted: #f0ede6;
+      --text: #1a1916;
+      --text-muted: #6b6860;
+      --text-light: #9a9690;
+      --accent: #2d6a4f;
+      --accent-light: #52b788;
+      --accent-pale: #d8f3dc;
+      --line: #e2ddd6;
+      --tag-bg: #eaf4ee;
+      --tag-text: #1b5e35;
+      --number: #2d6a4f;
+      --warn: #7c4a00;
+      --warn-bg: #fff3e0;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      line-height: 1.75;
+      font-size: 16px;
+    }
+
+    /* ── HEADER ── */
+    header {
+      background: var(--bg);
+      border-bottom: 1px solid var(--line);
+      padding: 20px 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(8px);
+    }
+    .header-inner {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .site-label {
+      font-family: 'Fraunces', serif;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--accent);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .meta-date {
+      font-size: 13px;
+      color: var(--text-light);
+    }
+
+    /* ── HERO ── */
+    .hero {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 72px 32px 56px;
+      border-bottom: 1px solid var(--line);
+    }
+    .hero-tag {
+      display: inline-block;
+      background: var(--tag-bg);
+      color: var(--tag-text);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 2px;
+      margin-bottom: 28px;
+    }
+    .hero h1 {
+      font-family: 'Fraunces', serif;
+      font-size: clamp(36px, 5vw, 54px);
+      font-weight: 700;
+      line-height: 1.12;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      margin-bottom: 24px;
+    }
+    .hero h1 em {
+      font-style: italic;
+      color: var(--accent);
+    }
+    .hero-lead {
+      font-size: 18px;
+      color: var(--text-muted);
+      max-width: 620px;
+      line-height: 1.65;
+      font-weight: 300;
+    }
+    .hero-meta {
+      margin-top: 36px;
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+    .hero-meta-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .hero-meta-item .label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-light);
+    }
+    .hero-meta-item .value {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    /* ── LAYOUT ── */
+    .content {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 32px 120px;
+    }
+
+    /* ── SECTION ── */
+    section {
+      padding: 64px 0 0;
+    }
+    .section-num {
+      font-family: 'Fraunces', serif;
+      font-size: 13px;
+      color: var(--accent-light);
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      margin-bottom: 8px;
+    }
+    section h2 {
+      font-family: 'Fraunces', serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.01em;
+      margin-bottom: 20px;
+      line-height: 1.2;
+    }
+    section p {
+      color: var(--text-muted);
+      margin-bottom: 16px;
+      max-width: 680px;
+    }
+    section p:last-child { margin-bottom: 0; }
+
+    /* ── DIVIDER ── */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--line);
+      margin: 0;
+    }
+
+    /* ── BACKGROUND BOX ── */
+    .bg-box {
+      background: var(--bg-muted);
+      border-left: 3px solid var(--accent-light);
+      padding: 24px 28px;
+      border-radius: 0 6px 6px 0;
+      margin: 28px 0;
+    }
+    .bg-box p {
+      margin-bottom: 10px;
+      font-size: 15px;
+    }
+
+    /* ── THREE-MODE CARDS ── */
+    .mode-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin: 32px 0;
+    }
+    @media (max-width: 640px) { .mode-grid { grid-template-columns: 1fr; } }
+    .mode-card {
+      background: var(--bg-card);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 24px 20px;
+      position: relative;
+      overflow: hidden;
+      transition: box-shadow 0.2s;
+    }
+    .mode-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.07); }
+    .mode-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--accent-light);
+    }
+    .mode-card h3 {
+      font-family: 'Fraunces', serif;
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: var(--text);
+    }
+    .mode-card .mode-tag {
+      font-size: 11px;
+      background: var(--accent-pale);
+      color: var(--tag-text);
+      padding: 2px 8px;
+      border-radius: 2px;
+      display: inline-block;
+      margin-bottom: 12px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .mode-card p {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* ── CASE STUDIES ── */
+    .case-list { margin: 32px 0; }
+    .case-item {
+      background: var(--bg-card);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 28px 28px 24px;
+      margin-bottom: 16px;
+      display: grid;
+      grid-template-columns: 56px 1fr;
+      gap: 20px;
+      align-items: start;
+      transition: box-shadow 0.2s;
+    }
+    .case-item:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
+    .case-num {
+      font-family: 'Fraunces', serif;
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--accent-pale);
+      line-height: 1;
+      padding-top: 4px;
+      user-select: none;
+    }
+    .case-body h3 {
+      font-family: 'Fraunces', serif;
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+    .case-body .case-sub {
+      font-size: 12px;
+      color: var(--text-light);
+      margin-bottom: 12px;
+      letter-spacing: 0.04em;
+    }
+    .case-body p {
+      font-size: 14.5px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+      max-width: none;
+    }
+    .stat-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+    .stat-pill {
+      background: var(--accent-pale);
+      border-radius: 4px;
+      padding: 5px 12px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--tag-text);
+    }
+    .stat-pill span {
+      font-weight: 300;
+      color: var(--text-muted);
+      margin-left: 4px;
+    }
+
+    /* ── KEY TECH ── */
+    .tech-block {
+      background: var(--bg-card);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 36px 32px;
+      margin: 32px 0;
+    }
+    .tech-block h3 {
+      font-family: 'Fraunces', serif;
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      color: var(--text);
+    }
+    .tech-block p {
+      font-size: 15px;
+      margin-bottom: 16px;
+    }
+    .tech-diagram {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin: 24px 0;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+    .td-step {
+      background: var(--bg-muted);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      white-space: nowrap;
+    }
+    .td-arrow {
+      color: var(--accent-light);
+      font-size: 16px;
+      padding: 0 4px;
+    }
+
+    /* ── LOOP ── */
+    .loop-box {
+      background: linear-gradient(135deg, #eaf4ee 0%, #f7f5f0 100%);
+      border: 1px solid var(--accent-pale);
+      border-radius: 8px;
+      padding: 32px;
+      margin: 32px 0;
+      text-align: center;
+    }
+    .loop-title {
+      font-family: 'Fraunces', serif;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 20px;
+      letter-spacing: 0.02em;
+    }
+    .loop-steps {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .loop-step {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 8px 18px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+    }
+    .loop-arrow {
+      color: var(--accent-light);
+      font-size: 18px;
+    }
+
+    /* ── LIMITATIONS ── */
+    .limit-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin: 28px 0;
+    }
+    @media (max-width: 560px) { .limit-grid { grid-template-columns: 1fr; } }
+    .limit-item {
+      background: var(--warn-bg);
+      border: 1px solid #ffe0b2;
+      border-radius: 6px;
+      padding: 16px 18px;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .limit-icon { font-size: 16px; flex-shrink: 0; margin-top: 2px; }
+    .limit-text {
+      font-size: 14px;
+      color: var(--warn);
+      line-height: 1.5;
+    }
+
+    /* ── CONTEXT ── */
+    .context-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin: 28px 0;
+    }
+    @media (max-width: 560px) { .context-grid { grid-template-columns: 1fr; } }
+    .context-card {
+      background: var(--bg-card);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 22px 20px;
+    }
+    .context-card h4 {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-light);
+      margin-bottom: 10px;
+    }
+    .context-card p {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    /* ── TAKEAWAY ── */
+    .takeaway {
+      background: var(--accent);
+      color: white;
+      border-radius: 10px;
+      padding: 40px 36px;
+      margin: 48px 0 0;
+    }
+    .takeaway h3 {
+      font-family: 'Fraunces', serif;
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      color: white;
+    }
+    .takeaway p {
+      font-size: 15px;
+      color: rgba(255,255,255,0.8);
+      line-height: 1.7;
+      max-width: 620px;
+      margin-bottom: 12px;
+    }
+    .takeaway p:last-child { margin-bottom: 0; }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--line);
+      padding: 32px;
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-light);
+      max-width: 860px;
+      margin: 0 auto;
+    }
+    footer a { color: var(--accent); text-decoration: none; }
+
+    /* ── ORIG BUTTON ── */
+    .read-orig {
+      display: inline-flex;
+      align-items: center;
+      margin-top: 28px;
+      padding: 10px 22px;
+      background: var(--accent);
+      color: white;
+      font-size: 14px;
+      font-weight: 500;
+      border-radius: 4px;
+      text-decoration: none;
+      letter-spacing: 0.02em;
+      transition: background 0.18s, transform 0.15s;
+    }
+    .read-orig:hover {
+      background: #245c42;
+      transform: translateY(-1px);
+    }
+
+    /* ── FADE IN ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .hero { animation: fadeUp 0.6s ease both; }
+    section { animation: fadeUp 0.6s ease both; animation-delay: 0.1s; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <span class="site-label">BioTender · AI4Bio 解读</span>
+    <span class="meta-date">2026年4月17日</span>
+  </div>
+</header>
+
+<div class="hero">
+  <span class="hero-tag">深度分析</span>
+  <h1>AI Agent 开始<em>自动训练</em><br>生物学模型了</h1>
+  <p class="hero-lead">Phylo（Biomni Lab）于2026年4月16日发布新功能预览：科学家只需用自然语言描述需求，Agent 即可完成 Foundation Model 的设计、预训练与微调全流程。</p>
+  <div class="hero-meta">
+    <div class="hero-meta-item">
+      <span class="label">来源</span>
+      <span class="value">phylo.bio / Biomni Lab</span>
+    </div>
+    <div class="hero-meta-item">
+      <span class="label">发布日期</span>
+      <span class="value">2026-04-16</span>
+    </div>
+    <div class="hero-meta-item">
+      <span class="label">公司融资</span>
+      <span class="value">$13.5M Seed · a16z + Menlo</span>
+    </div>
+    <div class="hero-meta-item">
+      <span class="label">阶段</span>
+      <span class="value">Beta / Early Preview</span>
+    </div>
+  </div>
+  <a class="read-orig" href="https://phylo.bio/blog/ai-agents-build-ai-biology-models" target="_blank" rel="noopener">
+    阅读原文 ↗
+  </a>
+</div>
+
+<div class="content">
+
+  <!-- ① 背景 -->
+  <section>
+    <div class="section-num">01 · 背景</div>
+    <h2>问题：谁能训练生物 AI 模型？</h2>
+    <p>过去两年里，生物学 Foundation Model 的浪潮愈演愈烈——Boltz 预测蛋白质结构、AlphaGenome 映射序列到表达、STATE 模拟细胞扰动……据 Bessemer Venture Partners 统计，仅2025年一年就有近 400 个生物 AI 模型发布。</p>
+    <p>但这带来了一个现实问题：<strong>大多数生物学家根本用不上这些模型</strong>。把现有模型微调到自己的私有数据集、适配新的实验 assay、针对特定物种或细胞类型做预训练——每一步都需要深度学习、生物信息学和分布式系统三重技能的罕见组合。</p>
+    <div class="bg-box">
+      <p>Phylo 的判断是：这个瓶颈不是模型能力的问题，而是<strong>可及性</strong>的问题。能执行"设计→训练→评估→迭代→部署"完整流程的人，在全球范围内依然稀缺。</p>
+      <p>这篇博文介绍的新功能，正是他们给出的答案。</p>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- ② 功能介绍 -->
+  <section>
+    <div class="section-num">02 · 功能</div>
+    <h2>三种模式，一个 Agent Loop</h2>
+    <p>Biomni Lab 新推出的预览功能，让科学家只需用自然语言描述数据、目标和算力预算，Agent 就会自动完成：文献调研 → 实验设计 → 代码生成 → GPU 调度 → 模型评估 → 迭代优化 → 部署交付。</p>
+    <p>三种模式共享同一套 Agent 循环，区别在于起点不同：</p>
+
+    <div class="mode-grid">
+      <div class="mode-card">
+        <div class="mode-tag">适配已有模型</div>
+        <h3>Finetune</h3>
+        <p>自动选择微调策略（全量 / LoRA / Adapter），完成数据准备、超参调优、性能评估。适合已有预训练模型、需要适配私有数据的场景。</p>
+      </div>
+      <div class="mode-card">
+        <div class="mode-tag">从零构建</div>
+        <h3>Pre-train</h3>
+        <p>从头设计模型架构，处理分布式训练和跨 GPU 集群的优化配置。适合针对特定物种、细胞类型或模态从零构建专属基础模型。</p>
+      </div>
+      <div class="mode-card">
+        <div class="mode-tag">创造新架构</div>
+        <h3>Design</h3>
+        <p>从任务描述出发，综述已有方法，提出并实现候选架构，必要时创造全新模型结构。最高自由度，也最体现 Agent 的主动设计能力。</p>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- ③ 关键技术 -->
+  <section>
+    <div class="section-num">03 · 核心技术</div>
+    <h2>GPU-as-a-Tool：算力变成工具</h2>
+
+    <div class="tech-block">
+      <h3>把 GPU 集群抽象为一个可调用的工具</h3>
+      <p>这是这篇博文最值得关注的工程创新。此前 Agent 工具箱里有 bash、Python、数据库、API——但 GPU 集群本身从来不是一个"工具"，它是需要人工配置的基础设施。</p>
+      <p>Biomni Lab 将 GPU 集群封装为 Agent 可直接调用的工具（GPU-as-a-tool）：Agent 根据任务规模动态申请资源、在 GPU 实例内生成并执行训练脚本、实时监控进度、出现问题时自动调整并重试。</p>
+      <div class="tech-diagram">
+        <div class="td-step">自然语言指令</div>
+        <div class="td-arrow">→</div>
+        <div class="td-step">Agent 规划</div>
+        <div class="td-arrow">→</div>
+        <div class="td-step">GPU 申请</div>
+        <div class="td-arrow">→</div>
+        <div class="td-step">脚本生成执行</div>
+        <div class="td-arrow">→</div>
+        <div class="td-step">监控迭代</div>
+        <div class="td-arrow">→</div>
+        <div class="td-step">部署交付</div>
+      </div>
+      <p>所有实验均在 Biomni Lab 的托管基础设施内运行，代码、数据和输出都有版本管理与 provenance 追踪，结果可复现。</p>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- ④ 案例 -->
+  <section>
+    <div class="section-num">04 · 六个演示案例</div>
+    <h2>从微调到全新架构设计，跨越多个生物子领域</h2>
+    <p>Biomni Lab 在博文中展示了六个端到端的真实生物任务，每个任务均从一条自然语言 prompt 启动，覆盖微调、预训练与架构设计三种模式。</p>
+
+    <div class="case-list">
+
+      <div class="case-item">
+        <div class="case-num">01</div>
+        <div class="case-body">
+          <h3>调控基因组学：微调 Borzoi</h3>
+          <div class="case-sub">FINETUNE MODE · 序列→调控活性预测</div>
+          <p>在 365K 个 lentiMPRA 调控元件上，跨 K562、HepG2、WTC11 三种细胞系进行微调。任务难点在于数据量大、细胞系异质性高，需要模型有足够的泛化能力。</p>
+          <div class="stat-row">
+            <div class="stat-pill">Pearson r = 0.837</div>
+            <div class="stat-pill">vs 随机初始化 <span>+0.285</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="case-item">
+        <div class="case-num">02</div>
+        <div class="case-body">
+          <h3>单细胞扰动预测：微调 scGPT</h3>
+          <div class="case-sub">FINETUNE MODE · Arc Virtual Cell Challenge · H1 hESC CRISPRi</div>
+          <p>针对 Arc Institute 举办的 Virtual Cell Challenge（H1 人类胚胎干细胞 CRISPRi 数据），将零样本表现负向的模型快速拉回到能正确捕捉扰动方向的水平。19 分钟内完成，100 个测试条件全部预测方向正确。</p>
+          <div class="stat-row">
+            <div class="stat-pill">DES: -0.75 → +0.41</div>
+            <div class="stat-pill">MAE 下降 40×<span>（29.6 → 0.72）</span></div>
+            <div class="stat-pill">耗时 19 分钟</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="case-item">
+        <div class="case-num">03</div>
+        <div class="case-body">
+          <h3>亚细胞定位预测：微调 ESM2-8M</h3>
+          <div class="case-sub">FINETUNE MODE · DeepLoc-1.0 · 10类区室分类</div>
+          <p>在 DeepLoc-1.0 数据集上做蛋白质亚细胞定位的多分类任务，仅 5 个 epoch 即完成训练。对于训练数据充足的主流区室（Extracellular、Plastid、Nucleus、Mitochondrion），F1 均达到 0.79–0.88；性能瓶颈集中在占训练数据不到 3% 的三个稀有类别。</p>
+          <div class="stat-row">
+            <div class="stat-pill">准确率 12% → 71.7%</div>
+            <div class="stat-pill">主流类别 F1 <span>0.79–0.88</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="case-item">
+        <div class="case-num">04</div>
+        <div class="case-body">
+          <h3>可解释性分析：一句话变机制假说</h3>
+          <div class="case-sub">ANALYSIS MODE · Integrated Gradients 归因</div>
+          <p>在案例③训练完成后，用一条自然语言 prompt 要求 Biomni 解释模型的预测机制。Agent 自动对 35 个蛋白质跑 Integrated Gradients 归因分析，发现了生物学上一致的机制：N 端信号肽驱动 Plastid/Extracellular 预测；K/R 富集对应 NLS motif；跨膜结构域特征对应 Cell membrane。</p>
+          <p>这一步展示了 Agent 能在"训练完模型"之后自动进入机制解读层，把数字指标转化为可发表的生物学洞见。</p>
+        </div>
+      </div>
+
+      <div class="case-item">
+        <div class="case-num">05</div>
+        <div class="case-body">
+          <h3>从零预训练蛋白语言模型</h3>
+          <div class="case-sub">PRE-TRAIN MODE · UniRef50 · A100 集群</div>
+          <p>复现 ESM2 架构（6 层、320 维 hidden、rotary PE），在 UniRef50 数据集上从头预训练，在 A100 上达到 233K tokens/sec 的训练速度，处理 41.9 亿 tokens。展示了 Agent 有能力配置和管理 GPU 级别的大规模预训练任务。</p>
+          <div class="stat-row">
+            <div class="stat-pill">233K tokens/sec</div>
+            <div class="stat-pill">训练量 <span>4.19B tokens</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="case-item">
+        <div class="case-num">06</div>
+        <div class="case-body">
+          <h3>从零设计全新架构：MolMTNet</h3>
+          <div class="case-sub">DESIGN MODE · TDC ADMET · 22 个 Benchmark</div>
+          <p>这是最激进的一个案例：不微调任何已有模型，而是让 Agent 自主设计一个用于 ADMET 性质预测的多任务模型。Agent 设计出 MolMTNet，一个 70M 参数的多任务网络，91 分钟内完成设计→实现→训练→评估全流程，跑完 TDC 全部 22 个 ADMET benchmark。结果：CYP3A4 substrate 指标超越 TDC Leaderboard 第一名，HIA、DILI、BBB 均进入 top 梯队。</p>
+          <div class="stat-row">
+            <div class="stat-pill">70M 参数</div>
+            <div class="stat-pill">耗时 91 分钟</div>
+            <div class="stat-pill">CYP3A4 <span>超越 Leaderboard #1</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- ⑤ 闭环 -->
+  <section>
+    <div class="section-num">05 · 更大的图景</div>
+    <h2>Lab-in-the-Loop：湿实验与模型训练的闭环</h2>
+    <p>文章末尾，Phylo 描述了一个更长远的愿景：不只是"AI 帮你训模型"，而是把模型训练嵌入科研发现的持续循环中。</p>
+
+    <div class="loop-box">
+      <div class="loop-title">Lab-in-the-Loop 闭环</div>
+      <div class="loop-steps">
+        <div class="loop-step">现有数据训模型</div>
+        <div class="loop-arrow">→</div>
+        <div class="loop-step">模型生成预测</div>
+        <div class="loop-arrow">→</div>
+        <div class="loop-step">启动湿实验</div>
+        <div class="loop-arrow">→</div>
+        <div class="loop-step">实验结果回来</div>
+        <div class="loop-arrow">→</div>
+        <div class="loop-step">自动重训模型</div>
+        <div class="loop-arrow">↺</div>
+      </div>
+    </div>
+
+    <p>这与 NVIDIA BioNeMo 和 Eli Lilly 最近宣布的联合实验室（10亿美元投入，连接湿实验室与干实验室的持续学习系统）方向高度一致，代表了 AI4Bio 领域对"计算-实验闭环"的共同押注。</p>
+    <p>Biomni Lab 的差异在于：它把这个闭环的入口降低到了自然语言这一层，而不需要科学家自己搭建任何 ML 工程流水线。</p>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- ⑥ 局限 -->
+  <section>
+    <div class="section-num">06 · 局限性</div>
+    <h2>Phylo 自己列出的待改进清单</h2>
+    <p>Phylo 在博文中相当坦诚地列出了当前预览版的局限，这些也是他们接下来征求 beta 测试者反馈的优先方向：</p>
+
+    <div class="limit-grid">
+      <div class="limit-item">
+        <span class="limit-icon">⚠</span>
+        <span class="limit-text">全新模型架构的自主创造能力仍然有限</span>
+      </div>
+      <div class="limit-item">
+        <span class="limit-icon">⚠</span>
+        <span class="limit-text">超参数优化与迭代效率有待提升</span>
+      </div>
+      <div class="limit-item">
+        <span class="limit-icon">⚠</span>
+        <span class="limit-text">主动学习（Active Learning）调度尚未支持</span>
+      </div>
+      <div class="limit-item">
+        <span class="limit-icon">⚠</span>
+        <span class="limit-text">训练数据混合与筛选策略需要改进</span>
+      </div>
+      <div class="limit-item">
+        <span class="limit-icon">⚠</span>
+        <span class="limit-text">模型的共享与版本管理体系尚不完善</span>
+      </div>
+      <div class="limit-item">
+        <span class="limit-icon">⚠</span>
+        <span class="limit-text">GPU 集群的资源分配策略仍需优化</span>
+      </div>
+    </div>
+
+    <p>需要指出的是：这些案例均为 Phylo 内部精心挑选的 demo，代表最优情形，并非随机任务下的平均表现。预训练和微调在实践中需要大量专业判断，Agent 当前的能力离"完全自动化"还有相当距离。</p>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- ⑦ 行业背景 -->
+  <section>
+    <div class="section-num">07 · 行业背景</div>
+    <h2>这件事为什么现在发生</h2>
+
+    <div class="context-grid">
+      <div class="context-card">
+        <h4>公司背景</h4>
+        <p>Phylo 于2026年2月3日正式从 Stanford 的开源项目 Biomni 独立商业化，完成 $13.5M 种子轮，由 a16z 和 Menlo Ventures（Anthology Fund，与 Anthropic 联合创立）领投。科学顾问包括 Carolyn Bertozzi、张峰、Fabian Theis。</p>
+      </div>
+      <div class="context-card">
+        <h4>Agent 基础</h4>
+        <p>Biomni-R0 是 Phylo 此前发布的生物推理模型，基于 Qwen-32B 用多轮强化学习训练，在稀有病诊断、GWAS 变异优先化等任务上大幅超越通用 LLM，为 GPU-as-a-tool 功能提供了具备领域知识的推理内核。</p>
+      </div>
+      <div class="context-card">
+        <h4>竞争格局</h4>
+        <p>NVIDIA BioNeMo Recipes（2026年1月）同样在降低 Foundation Model 训练门槛。Eli Lilly 与 NVIDIA 合作的持续学习湿实验闭环（10亿美元规模）代表了 Pharma 侧的方向。Biomni Lab 的差异化在于：以 Agent 交互（而非工程配置）作为入口。</p>
+      </div>
+      <div class="context-card">
+        <h4>对 CRO 的意义</h4>
+        <p>对于 CRO 和计算生物团队来说，这意味着"根据客户的私有 assay 数据快速微调专属预测模型"可能从一个需要 ML 工程师介入的项目，变成科学家自己操作的标准流程。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ⑧ 总结 -->
+  <div class="takeaway">
+    <h3>一句话总结这件事的意义</h3>
+    <p>Biomni Lab 这次发布的，本质上是把"训练生物 AI 模型"的技术门槛从 ML 工程师降低到了能描述科研问题的生物学家。GPU 从基础设施变成了 Agent 可调用的工具，这个抽象层的变化，和当年把命令行封装成 API 的影响是同一个量级的。</p>
+    <p>它现在还是早期预览，很多地方仍然粗糙。但方向是清晰的——如果这条路走通，生物 AI 模型训练这件事，将在接下来几年里经历一次和蛋白质结构预测同等量级的民主化。</p>
+  </div>
+
+</div>
+
+<footer>
+  <p>本文由 <strong>BioTender</strong> 整理分析 · 原文来源：<a href="https://phylo.bio/blog/ai-agents-build-ai-biology-models" target="_blank">phylo.bio</a> · 数据截止 2026年4月17日</p>
+</footer>
+
+</body>
+</html>

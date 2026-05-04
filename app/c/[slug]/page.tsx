@@ -56,15 +56,15 @@ export default async function CategoryPage({ params }: PageProps) {
       <nav className="bt-nav fixed top-0 left-0 right-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <Link href="/BioTender" className="flex items-center gap-3">
+            <Link href="/" className="flex items-center gap-3">
               <span className="bt-mark" />
               <span className="bt-word">BioTender</span>
             </Link>
             <div className="flex gap-6">
-              <Link href="/BioTender" className="bt-link">
+              <Link href="/" className="bt-link">
                 Home
               </Link>
-              <Link href="/BioTender/all" className="bt-link">
+              <Link href="/all" className="bt-link">
                 All
               </Link>
             </div>
@@ -75,7 +75,7 @@ export default async function CategoryPage({ params }: PageProps) {
       <main className="pt-28 pb-20 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto">
         {/* 标题区 */}
         <div className="mb-8">
-          <Link href="/BioTender" className="text-[var(--chrome-3)] hover:text-white transition-colors text-sm">
+          <Link href="/" className="text-[var(--chrome-3)] hover:text-white transition-colors text-sm">
             ← 返回首页
           </Link>
           <h1 className="bt-hero-title text-5xl md:text-6xl font-light mt-4 mb-3">

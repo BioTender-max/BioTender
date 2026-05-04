@@ -4,7 +4,7 @@ import categorySlugs from '../data/category-slugs.json';
 export const dynamic = 'force-static';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://junior1p.github.io/BioTender';
+  const baseUrl = 'https://www.biotender.online/BioTender';
 
   // 静态页面
   const staticPages: MetadataRoute.Sitemap = [

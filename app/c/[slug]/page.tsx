@@ -53,17 +53,18 @@ export default async function CategoryPage({ params }: PageProps) {
   return (
     <>
       {/* 导航栏 */}
-      <nav className="fixed top-0 left-0 right-0 z-40 glass border-b border-cyan-500/20">
+      <nav className="bt-nav fixed top-0 left-0 right-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <Link href="/" className="text-2xl font-bold text-cyan-300">
-              BioTender
+            <Link href="/BioTender" className="flex items-center gap-3">
+              <span className="bt-mark" />
+              <span className="bt-word">BioTender</span>
             </Link>
             <div className="flex gap-6">
-              <Link href="/" className="text-gray-300 hover:text-cyan-300 transition-colors">
+              <Link href="/BioTender" className="bt-link">
                 Home
               </Link>
-              <Link href="/all" className="text-gray-300 hover:text-cyan-300 transition-colors">
+              <Link href="/BioTender/all" className="bt-link">
                 All
               </Link>
             </div>
@@ -71,16 +72,16 @@ export default async function CategoryPage({ params }: PageProps) {
         </div>
       </nav>
 
-      <main className="pt-24 pb-16 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto">
+      <main className="pt-28 pb-20 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto">
         {/* 标题区 */}
         <div className="mb-8">
-          <Link href="/" className="text-cyan-400 hover:text-cyan-300 transition-colors text-sm">
+          <Link href="/BioTender" className="text-[var(--chrome-3)] hover:text-white transition-colors text-sm">
             ← 返回首页
           </Link>
-          <h1 className="text-4xl font-bold text-white mt-4 mb-2">
+          <h1 className="bt-hero-title text-5xl md:text-6xl font-light mt-4 mb-3">
             {categoryName}
           </h1>
-          <p className="text-gray-400">
+          <p className="text-[var(--chrome-3)]">
             共 {items.length} 条资源
           </p>
         </div>
@@ -90,7 +91,7 @@ export default async function CategoryPage({ params }: PageProps) {
           <input
             type="text"
             placeholder="搜索此分类下的资源..."
-            className="w-full px-6 py-4 glass rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
+            className="bt-search w-full px-6 py-4 rounded-full placeholder-[var(--chrome-4)] focus:outline-none"
             id="category-search"
             data-category={categoryName}
           />
@@ -98,35 +99,39 @@ export default async function CategoryPage({ params }: PageProps) {
 
         {/* 资源列表 */}
         <div className="space-y-4" id="items-list">
-          {items.map((item: any, idx: number) => (
-            <div
-              key={idx}
-              className="glass rounded-lg p-6 hover:border-cyan-500/40 transition-all duration-300 item-card"
-              data-title={item.title.toLowerCase()}
-            >
-              <h3 className="text-lg font-semibold text-white mb-3">
-                {item.title}
-              </h3>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-400 truncate max-w-md">
-                  {item.url}
-                </span>
-                <a
-                  href={item.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg transition-colors duration-200 text-sm font-medium"
-                >
-                  打开链接
-                </a>
+          {items.map((item: any, idx: number) => {
+            const title = item.title || item.name || item.url || '未命名资源';
+
+            return (
+              <div
+                key={idx}
+                className="bt-panel rounded-xl p-6 transition-all duration-300 item-card"
+                data-title={title.toLowerCase()}
+              >
+                <h3 className="text-lg font-semibold text-white mb-3">
+                  {title}
+                </h3>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-[var(--chrome-3)] truncate max-w-md">
+                    {item.url}
+                  </span>
+                  <a
+                    href={item.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-4 py-2 border border-white/15 hover:border-white/30 text-white rounded-full transition-colors duration-200 text-sm font-medium"
+                  >
+                    打开链接
+                  </a>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* 无搜索结果提示 */}
         <div id="no-results" className="hidden text-center py-12">
-          <p className="text-gray-400 text-lg">未找到匹配的资源</p>
+          <p className="text-[var(--chrome-3)] text-lg">未找到匹配的资源</p>
         </div>
 
         {/* 搜索脚本 */}

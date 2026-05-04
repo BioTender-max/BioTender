@@ -51,18 +51,18 @@ export default function HomePage() {
       <nav className="bt-nav fixed top-0 left-0 right-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <Link href="/BioTender" className="flex items-center gap-3">
+            <Link href="/" className="flex items-center gap-3">
               <span className="bt-mark" />
               <span className="bt-word">BioTender</span>
             </Link>
             <div className="flex gap-6">
-              <Link href="/BioTender" className="bt-link-active">
+              <Link href="/" className="bt-link-active">
                 Home
               </Link>
-              <Link href="/BioTender/all" className="bt-link">
+              <Link href="/all" className="bt-link">
                 All
               </Link>
-              <Link href="/BioTender/tools" className="bt-link">
+              <Link href="/tools" className="bt-link">
                 Tools
               </Link>
             </div>

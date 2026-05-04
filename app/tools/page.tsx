@@ -39,22 +39,23 @@ export default function ToolsPage() {
   return (
     <>
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-40 glass border-b border-cyan-500/20">
+      <nav className="bt-nav fixed top-0 left-0 right-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <Link href="/" className="text-2xl font-bold text-cyan-300">
-              BioTender
+            <Link href="/BioTender" className="flex items-center gap-3">
+              <span className="bt-mark" />
+              <span className="bt-word">BioTender</span>
             </Link>
             <div className="flex gap-6">
-              <Link href="/" className="text-gray-300 hover:text-cyan-300 transition-colors">
+              <Link href="/BioTender" className="bt-link">
                 Home
               </Link>
-              <Link href="/all" className="text-gray-300 hover:text-cyan-300 transition-colors">
+              <Link href="/BioTender/all" className="bt-link">
                 All
               </Link>
               <Link
-                href="/tools"
-                className="text-cyan-300 hover:text-cyan-200 transition-colors font-medium"
+                href="/BioTender/tools"
+                className="bt-link-active"
               >
                 Tools
               </Link>
@@ -64,14 +65,14 @@ export default function ToolsPage() {
       </nav>
 
       {/* Main Content */}
-      <main className="pt-24 pb-16 px-4 sm:px-6 lg:px-8">
+      <main className="pt-28 pb-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
           {/* Page Header */}
           <div className="mb-12 text-center">
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+            <h1 className="bt-hero-title text-5xl md:text-7xl font-light mb-5">
               分子生物学工具集
             </h1>
-            <p className="text-lg text-gray-400">
+            <p className="text-lg text-[var(--chrome-3)]">
               探索蛋白质结构、分子相互作用与生物信息学分析工具
             </p>
           </div>
@@ -82,20 +83,20 @@ export default function ToolsPage() {
               <Link
                 key={tool.path}
                 href={tool.path}
-                className="glass rounded-lg p-6 hover:bg-slate-800/50 transition-all duration-300 group"
+                className="bt-panel rounded-xl p-6 transition-all duration-300 group"
               >
                 <div className="flex items-start gap-4">
                   <div className="text-4xl">{tool.icon}</div>
                   <div className="flex-1">
-                    <h2 className="text-xl font-semibold text-white mb-2 group-hover:text-cyan-300 transition-colors">
+                    <h2 className="text-xl font-semibold text-white mb-2 group-hover:text-[var(--chrome)] transition-colors">
                       {tool.title}
                     </h2>
-                    <p className="text-gray-400 text-sm">
+                    <p className="text-[var(--chrome-3)] text-sm">
                       {tool.description}
                     </p>
                   </div>
                   <svg
-                    className="w-6 h-6 text-gray-500 group-hover:text-cyan-400 transition-colors"
+                    className="w-6 h-6 text-[var(--chrome-4)] group-hover:text-white transition-colors"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -110,22 +111,22 @@ export default function ToolsPage() {
           {/* Coming Soon Section */}
           <div className="mt-12">
             <h2 className="text-2xl font-semibold text-white mb-6">即将推出</h2>
-            <div className="glass rounded-lg p-6 opacity-60">
+            <div className="bt-panel rounded-xl p-6 opacity-70">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
                 <div className="p-4">
                   <div className="text-3xl mb-2">🧪</div>
                   <h3 className="text-white font-medium mb-1">分子对接</h3>
-                  <p className="text-gray-400 text-sm">AutoDock Vina 集成</p>
+                  <p className="text-[var(--chrome-3)] text-sm">AutoDock Vina 集成</p>
                 </div>
                 <div className="p-4">
                   <div className="text-3xl mb-2">📊</div>
                   <h3 className="text-white font-medium mb-1">轨迹分析</h3>
-                  <p className="text-gray-400 text-sm">MD 动力学轨迹可视化</p>
+                  <p className="text-[var(--chrome-3)] text-sm">MD 动力学轨迹可视化</p>
                 </div>
                 <div className="p-4">
                   <div className="text-3xl mb-2">🎯</div>
                   <h3 className="text-white font-medium mb-1">结合模式预测</h3>
-                  <p className="text-gray-400 text-sm">AI 驱动的亲和力预测</p>
+                  <p className="text-[var(--chrome-3)] text-sm">AI 驱动的亲和力预测</p>
                 </div>
               </div>
             </div>

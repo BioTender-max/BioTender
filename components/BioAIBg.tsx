@@ -78,9 +78,9 @@ export default function BioAIBg() {
           node.x, node.y, 0,
           node.x, node.y, node.radius * 3
         );
-        gradient.addColorStop(0, 'rgba(0, 212, 255, 0.8)');
-        gradient.addColorStop(0.7, 'rgba(139, 92, 246, 0.4)');
-        gradient.addColorStop(1, 'rgba(139, 92, 246, 0)');
+        gradient.addColorStop(0, 'rgba(255, 255, 255, 0.62)');
+        gradient.addColorStop(0.58, 'rgba(142, 160, 255, 0.28)');
+        gradient.addColorStop(1, 'rgba(124, 240, 210, 0)');
         
         ctx.fillStyle = gradient;
         ctx.fill();
@@ -88,7 +88,7 @@ export default function BioAIBg() {
         // 添加光晕效果
         ctx.beginPath();
         ctx.arc(node.x, node.y, node.radius * 2, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(0, 212, 255, 0.1)';
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.055)';
         ctx.fill();
       });
 
@@ -106,9 +106,9 @@ export default function BioAIBg() {
               nodes[i].x, nodes[i].y,
               nodes[j].x, nodes[j].y
             );
-            gradient.addColorStop(0, `rgba(0, 212, 255, ${opacity})`);
-            gradient.addColorStop(0.5, `rgba(139, 92, 246, ${opacity * 0.7})`);
-            gradient.addColorStop(1, `rgba(0, 212, 255, ${opacity})`);
+            gradient.addColorStop(0, `rgba(255, 255, 255, ${opacity * 0.8})`);
+            gradient.addColorStop(0.5, `rgba(142, 160, 255, ${opacity * 0.55})`);
+            gradient.addColorStop(1, `rgba(124, 240, 210, ${opacity * 0.65})`);
             
             ctx.beginPath();
             ctx.moveTo(nodes[i].x, nodes[i].y);
@@ -122,7 +122,7 @@ export default function BioAIBg() {
               ctx.beginPath();
               ctx.moveTo(nodes[i].x, nodes[i].y);
               ctx.lineTo(nodes[j].x, nodes[j].y);
-              ctx.strokeStyle = `rgba(0, 212, 255, ${opacity * 0.3})`;
+              ctx.strokeStyle = `rgba(255, 255, 255, ${opacity * 0.22})`;
               ctx.lineWidth = 3;
               ctx.stroke();
             }
@@ -149,14 +149,14 @@ export default function BioAIBg() {
       className="fixed inset-0 -z-10"
       style={{ 
         background: `
-          radial-gradient(ellipse at center top, rgba(0, 212, 255, 0.03) 0%, transparent 50%),
-          radial-gradient(ellipse at center bottom, rgba(139, 92, 246, 0.02) 0%, transparent 50%),
-          linear-gradient(135deg, 
-            #0a0e1a 0%, 
-            #0f1726 25%,
-            #050710 50%,
-            #0a0e1a 75%,
-            #050710 100%)
+          radial-gradient(ellipse at center top, rgba(255, 255, 255, 0.045) 0%, transparent 54%),
+          radial-gradient(ellipse at center bottom, rgba(124, 240, 210, 0.028) 0%, transparent 60%),
+          linear-gradient(135deg,
+            #050507 0%,
+            #0b0c11 25%,
+            #11131a 50%,
+            #08090d 75%,
+            #050507 100%)
         `,
         backgroundSize: '100% 100%, 100% 100%, 200% 200%',
         backgroundAttachment: 'fixed, fixed, fixed'

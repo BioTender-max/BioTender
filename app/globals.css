@@ -1,15 +1,23 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0a0e1a;
-  --background-deep: #050710;
-  --background-accent: #0f1726;
-  --background-glass: rgba(15, 23, 38, 0.6);
-  --foreground: #e2e8f0;
-  --primary-cyan: #00d4ff;
-  --primary-purple: #8b5cf6;
-  --primary-blue: #3b82f6;
-  --accent-glow: rgba(0, 212, 255, 0.15);
+  --void: #050507;
+  --void-2: #0a0a0d;
+  --surface: rgba(255, 255, 255, 0.035);
+  --surface-2: rgba(255, 255, 255, 0.058);
+  --edge: rgba(255, 255, 255, 0.08);
+  --edge-2: rgba(255, 255, 255, 0.14);
+  --edge-bright: rgba(255, 255, 255, 0.28);
+  --chrome: #f4f5f7;
+  --chrome-2: #c9cbd0;
+  --chrome-3: #8f949d;
+  --chrome-4: #595f68;
+  --accent: #7cf0d2;
+  --accent-cool: #8ea0ff;
+  --background: var(--void);
+  --foreground: var(--chrome);
+  --wide: 1240px;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @theme inline {
@@ -19,39 +27,38 @@
 
 body {
   background: var(--background);
-  background-image: 
-    radial-gradient(circle at 20% 50%, var(--background-accent) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, var(--background-deep) 0%, transparent 60%),
-    radial-gradient(circle at 40% 80%, var(--background) 0%, transparent 50%);
+  background-image:
+    radial-gradient(ellipse 60% 45% at 50% 0%, rgba(255, 255, 255, 0.10), transparent 64%),
+    radial-gradient(ellipse 40% 38% at 18% 26%, rgba(142, 160, 255, 0.14), transparent 68%),
+    radial-gradient(ellipse 42% 34% at 82% 22%, rgba(124, 240, 210, 0.10), transparent 70%),
+    linear-gradient(180deg, #050507 0%, #090a0e 48%, #050507 100%);
   background-attachment: fixed;
-  background-size: 100% 100%, 100% 100%, 100% 100%;
   color: var(--foreground);
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
   min-height: 100vh;
 }
 
-/* 玻璃拟态 - 科技感生物风格 */
-.glass {
-  background: var(--background-glass);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(0, 212, 255, 0.3);
-  box-shadow: 
-    0 4px 6px -1px rgba(0, 0, 0, 0.3),
-    0 2px 4px -1px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0.35;
+  background:
+    linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.012) 1px, transparent 1px);
+  background-size: 72px 72px;
+  mask-image: radial-gradient(circle at center, black 42%, transparent 100%);
 }
 
-/* 增强玻璃效果 - 用于重要组件 */
+a { transition: color .2s var(--ease-out), border-color .2s var(--ease-out), background .2s var(--ease-out), transform .2s var(--ease-out); }
+
+.glass,
 .glass-enhanced {
-  background: linear-gradient(135deg, 
-    rgba(15, 23, 38, 0.8) 0%, 
-    rgba(10, 14, 26, 0.6) 100%);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(0, 212, 255, 0.4);
-  box-shadow: 
-    0 8px 32px -8px rgba(0, 212, 255, 0.2),
-    0 4px 16px -4px rgba(139, 92, 246, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  background: #0B0C0F;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  box-shadow: none;
 }
 
 /* 滚动条样式 - 科技感 */
@@ -60,43 +67,151 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(10, 14, 26, 0.8);
-  border: 1px solid rgba(0, 212, 255, 0.1);
+  background: rgba(5, 5, 7, 0.82);
+  border: 1px solid var(--edge);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, var(--primary-cyan), var(--primary-purple));
+  background: linear-gradient(180deg, var(--chrome-2), var(--chrome-4));
   border-radius: 4px;
-  border: 1px solid rgba(0, 212, 255, 0.3);
-  box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+  border: 1px solid var(--edge-2);
+  box-shadow: 0 0 16px rgba(255,255,255,0.12);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #00e5ff, #a78bfa);
-  box-shadow: 0 0 15px rgba(0, 212, 255, 0.5);
+  background: linear-gradient(180deg, #ffffff, #9ca3af);
+  box-shadow: 0 0 18px rgba(255,255,255,0.22);
 }
 
 /* 科技感光晕效果 */
 .glow-cyan {
-  box-shadow: 0 0 20px rgba(0, 212, 255, 0.3),
-              0 0 40px rgba(0, 212, 255, 0.1);
+  box-shadow: 0 0 20px rgba(124, 240, 210, 0.22),
+              0 0 40px rgba(124, 240, 210, 0.08);
 }
 
 .glow-purple {
-  box-shadow: 0 0 20px rgba(139, 92, 246, 0.3),
-              0 0 40px rgba(139, 92, 246, 0.1);
+  box-shadow: 0 0 20px rgba(142, 160, 255, 0.24),
+              0 0 40px rgba(142, 160, 255, 0.10);
 }
 
 /* 生物感渐变背景 */
 .bio-gradient {
-  background: linear-gradient(135deg, 
-    var(--background-deep) 0%, 
-    var(--background) 25%,
-    var(--background-accent) 50%,
-    var(--background) 75%,
-    var(--background-deep) 100%);
+  background: linear-gradient(135deg,
+    #050507 0%,
+    #0d0e13 25%,
+    #151820 50%,
+    #0a0b10 75%,
+    #050507 100%);
   background-size: 200% 200%;
   animation: bioGradient 15s ease infinite;
+}
+
+.bt-nav {
+  background: rgba(5, 5, 7, 0.68);
+  backdrop-filter: saturate(140%) blur(20px);
+  border-bottom: 1px solid var(--edge);
+}
+
+.bt-mark {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: radial-gradient(circle at 30% 30%, #ffffff, #bfc7ff 40%, #7888ff 68%, #3844a6 100%);
+  box-shadow: 0 0 0 8px rgba(142,160,255,0.10), 0 0 28px rgba(142,160,255,0.38);
+}
+
+.bt-word {
+  color: var(--chrome);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+}
+
+.bt-link { color: var(--chrome-3); font-size: 13px; }
+.bt-link:hover { color: var(--chrome); }
+.bt-link-active { color: var(--chrome); border-bottom: 1px solid var(--edge-bright); padding-bottom: 4px; }
+
+.bt-hero-title {
+  background: linear-gradient(180deg, #ffffff 0%, #d9dbe2 40%, #8d929d 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -0.065em;
+}
+
+.bt-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--chrome-3);
+  border: 1px solid var(--edge);
+  background: var(--surface);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 13px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+}
+
+.bt-kicker::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 0 0 6px rgba(124,240,210,0.10);
+}
+
+.bt-panel {
+  background: #0B0C0F;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  box-shadow: none;
+}
+
+.bt-panel:hover {
+  background: #15161A;
+  border-color: rgba(255, 255, 255, 0.12);
+  transform: none;
+}
+
+.bt-section-rule {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--edge);
+  padding-bottom: 18px;
+  margin-bottom: 28px;
+}
+
+.bt-label {
+  color: var(--chrome);
+  font-size: 11px;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+}
+
+.bt-cue {
+  color: var(--chrome-3);
+  font-size: 10px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+}
+
+.bt-chip {
+  border: 1px solid var(--edge);
+  background: transparent;
+  color: var(--chrome-2);
+}
+
+.bt-search {
+  background: #0B0C0F;
+  border: 1px solid var(--edge);
+  color: var(--chrome);
+}
+
+.bt-search:focus {
+  border-color: var(--edge-bright);
+  box-shadow: 0 0 0 4px rgba(255,255,255,0.04);
 }
 
 @keyframes bioGradient {

@@ -1,6 +1,36 @@
-# BioTender - AI × Biology 知识导航站
+# BioTender
 
-一个基于 Next.js 构建的静态知识导航网站，专注于人工智能与生命科学的交叉领域。
+BioTender is a Chinese AI-for-Biology intelligence and media platform covering protein design, structure prediction, virtual cells, AI drug discovery, biological foundation models, scientific agents, AI4Bio startups, and frontier research.
+
+BioTender provides curated research tracking, project indexing, long-form analysis, interviews, and industry communication for researchers, founders, investors, and biotech professionals.
+
+中文定位：
+
+BioTender 是一个面向 AI for Biology 的中文研究情报与产业观察平台，长期追踪蛋白设计、结构预测、虚拟细胞、AI 制药、生物基础模型、科研智能体与 AI4Bio 创业公司。
+
+## Core Pages
+
+- Website: https://www.biotender.online/
+- About: https://www.biotender.online/about/
+- Discovery Station: https://www.biotender.online/biotender-discovery/
+- AI × Biology Knowledge Navigation: https://www.biotender.online/BioTender/
+- Scholar Program: https://www.biotender.online/scholar-program.html
+- llms.txt: https://www.biotender.online/llms.txt
+
+## What BioTender Covers
+
+- Protein design
+- Protein structure prediction
+- AI drug discovery
+- Virtual cells
+- Biological foundation models
+- Biomedical AI agents
+- Scientific agents
+- AI4Bio startups
+- AI for Science tools
+- AI × Biology industry intelligence
+
+---
 
 ## 功能特性
 

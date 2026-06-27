@@ -1,0 +1,897 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>多肽对接 AI 打分与重排序 · DeeCamp 2026 赛题报名</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F4F0E7;
+    --paper-2:#EDE7DA;
+    --ink:#1E2C2A;
+    --ink-soft:#3C4B48;
+    --slate:#6E7873;
+    --line:rgba(30,44,42,.14);
+    --line-2:rgba(30,44,42,.08);
+    --hotspot:#E1572E;        /* binding hotspot / required / CTA */
+    --hotspot-soft:#F6E2D7;
+    --conf-lo:#2E5FAE;        /* pLDDT-style confidence ramp */
+    --conf-mid:#3DA3A0;
+    --conf-hi:#E9B43A;
+    --card:#FBF8F1;
+    --shadow:0 1px 0 rgba(30,44,42,.05), 0 18px 44px -28px rgba(30,44,42,.45);
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;background:var(--paper);color:var(--ink);
+    font-family:"Noto Sans SC",system-ui,-apple-system,sans-serif;
+    font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+  .wrap{max-width:1080px;margin:0 auto;padding:0 28px}
+  .mono{font-family:"JetBrains Mono",ui-monospace,monospace}
+  .eyebrow{
+    font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--slate);font-weight:500;
+  }
+  a{color:inherit}
+
+  /* ---------- top bar ---------- */
+  .topbar{
+    border-bottom:1px solid var(--line);position:sticky;top:0;z-index:40;
+    background:rgba(244,240,231,.86);backdrop-filter:saturate(1.1) blur(8px);
+  }
+  .topbar .wrap{display:flex;align-items:center;justify-content:space-between;height:56px;gap:16px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.02em}
+  .brand .dot{width:9px;height:9px;border-radius:50%;background:var(--hotspot);box-shadow:0 0 0 4px var(--hotspot-soft)}
+  .brand small{font-weight:500;color:var(--slate)}
+  .topbar .deadline{font-size:12px}
+  .topbar .deadline b{color:var(--hotspot)}
+  .topbar .deadline span{color:var(--slate)}
+
+  /* ---------- hero ---------- */
+  .hero{padding:76px 0 0;border-bottom:1px solid var(--line)}
+  .hero-body{max-width:760px}
+  .hero-spec{
+    display:flex;flex-wrap:wrap;gap:0;margin-top:48px;border-top:1px solid var(--line);
+  }
+  .hero-spec span{
+    flex:1 1 160px;padding:18px 22px 20px;border-right:1px solid var(--line);
+    display:flex;flex-direction:column;gap:5px;font-size:14px;color:var(--ink);font-weight:500;
+  }
+  .hero-spec span:last-child{border-right:none}
+  .hero-spec i{font-style:normal;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--slate);font-weight:500}
+  .hero-spec b{color:var(--hotspot)}
+  .track-tag{
+    display:inline-flex;align-items:center;gap:8px;padding:5px 12px;border:1px solid var(--line);
+    border-radius:999px;background:var(--card);font-family:"JetBrains Mono",monospace;
+    font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:22px;
+  }
+  .track-tag i{width:7px;height:7px;border-radius:2px;background:var(--conf-mid);font-style:normal}
+  h1{
+    font-family:"Noto Serif SC",serif;font-weight:900;line-height:1.08;
+    font-size:clamp(40px,6vw,68px);letter-spacing:-.01em;margin:0 0 14px;
+  }
+  h1 .en{
+    display:block;font-family:"Fraunces",serif;font-style:italic;font-weight:500;
+    font-size:clamp(19px,2.4vw,26px);letter-spacing:0;color:var(--ink-soft);margin-top:14px;line-height:1.2;
+  }
+  .lede{font-size:17.5px;color:var(--ink-soft);max-width:42ch;margin:0 0 30px;line-height:1.7}
+  .lede b{color:var(--ink);font-weight:700}
+  .cta-row{display:flex;flex-wrap:wrap;align-items:center;gap:14px}
+  .btn{
+    font-family:inherit;font-size:15px;font-weight:700;border:none;cursor:pointer;
+    padding:14px 26px;border-radius:999px;background:var(--ink);color:var(--paper);
+    transition:transform .15s ease, box-shadow .15s ease;text-decoration:none;display:inline-flex;gap:9px;align-items:center;
+  }
+  .btn:hover{transform:translateY(-2px);box-shadow:0 14px 28px -14px rgba(30,44,42,.6)}
+  .btn.hot{background:var(--hotspot)}
+  .btn.hot:hover{box-shadow:0 14px 28px -14px rgba(225,87,46,.7)}
+  .meta-chip{font-size:13px;color:var(--slate)}
+  .meta-chip b{color:var(--hotspot)}
+
+  /* ---------- generic section ---------- */
+  .section{padding:62px 0;border-bottom:1px solid var(--line)}
+  .sec-head{display:flex;align-items:baseline;gap:16px;margin-bottom:30px;flex-wrap:wrap}
+  .sec-head h2{
+    font-family:"Noto Serif SC",serif;font-weight:700;font-size:clamp(26px,3.4vw,36px);
+    margin:0;letter-spacing:-.01em;
+  }
+  .sec-head .num{font-family:"JetBrains Mono",monospace;font-size:13px;color:var(--hotspot);font-weight:700;letter-spacing:.1em}
+  .prose{max-width:64ch;color:var(--ink-soft);font-size:17px;line-height:1.78}
+  .prose b{color:var(--ink)}
+
+  /* ---------- pipeline (signature) ---------- */
+  .pipeline{display:grid;grid-template-columns:repeat(5,1fr);gap:0;margin-top:8px}
+  .agent{
+    position:relative;padding:22px 16px 24px;border-left:1px solid var(--line);
+    transition:background .2s ease;
+  }
+  .agent:first-child{border-left:none}
+  .agent:hover{background:var(--card)}
+  .agent .idx{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--hotspot);font-weight:700}
+  .agent .node{
+    width:13px;height:13px;border-radius:50%;background:var(--paper);border:2px solid var(--ink);
+    margin:14px 0;position:relative;
+  }
+  .agent .name{font-weight:700;font-size:15px;margin-bottom:7px;letter-spacing:.01em}
+  .agent .name em{display:block;font-family:"Fraunces",serif;font-style:italic;font-weight:500;font-size:12.5px;color:var(--slate);letter-spacing:0}
+  .agent .desc{font-size:12.5px;color:var(--ink-soft);line-height:1.55}
+  /* connector line through nodes */
+  .pipe-track{position:relative;height:2px;background:var(--line);margin:0 0 -1px}
+  .agent[data-k="critic"] .node{border-color:var(--hotspot)}
+  .agent[data-k="report"] .node{background:var(--ink)}
+
+  /* ---------- capability list ---------- */
+  .caps{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+  .cap{background:var(--card);padding:22px 24px;display:flex;gap:16px}
+  .cap .k{font-family:"JetBrains Mono",monospace;font-size:13px;color:var(--hotspot);font-weight:700;flex:none;padding-top:1px}
+  .cap p{margin:0;font-size:14.5px;color:var(--ink-soft);line-height:1.6}
+  .cap p b{color:var(--ink)}
+
+  /* ---------- deliver / eval ---------- */
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:40px}
+  .panel h3{font-family:"Noto Serif SC",serif;font-weight:700;font-size:19px;margin:0 0 14px}
+  .tags{display:flex;flex-wrap:wrap;gap:9px}
+  .tag{
+    font-family:"JetBrains Mono",monospace;font-size:12px;padding:6px 12px;border-radius:8px;
+    background:var(--card);border:1px solid var(--line);color:var(--ink-soft);
+  }
+  .tag.hi{border-color:var(--hotspot);color:var(--hotspot);background:var(--hotspot-soft)}
+  .note{margin-top:18px;font-size:14px;color:var(--slate);border-left:2px solid var(--line);padding-left:14px}
+
+  /* ---------- form ---------- */
+  .form-section{padding:64px 0;background:linear-gradient(180deg,var(--paper),var(--paper-2))}
+  .form-card{
+    background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);
+    padding:40px clamp(22px,4vw,48px);max-width:760px;margin:0 auto;
+  }
+  .form-head{margin-bottom:8px}
+  .form-head h2{font-family:"Noto Serif SC",serif;font-weight:900;font-size:clamp(26px,4vw,34px);margin:6px 0 8px}
+  .locked-track{
+    display:flex;align-items:center;gap:12px;background:var(--hotspot-soft);border:1px solid rgba(225,87,46,.3);
+    border-radius:12px;padding:13px 16px;margin:22px 0 30px;font-size:13.5px;
+  }
+  .locked-track .lk{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--hotspot);font-weight:700}
+  .locked-track b{color:var(--ink)}
+  fieldset{border:none;padding:0;margin:0 0 30px}
+  legend{
+    font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--slate);font-weight:500;padding:0;margin-bottom:18px;display:flex;align-items:center;gap:10px;width:100%;
+  }
+  legend::after{content:"";flex:1;height:1px;background:var(--line)}
+  .field{margin-bottom:20px}
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  label.lbl{display:block;font-size:14px;font-weight:500;margin-bottom:8px;color:var(--ink)}
+  label.lbl .req{color:var(--hotspot);margin-left:3px}
+  label.lbl .hint{display:block;font-weight:400;font-size:12.5px;color:var(--slate);margin-top:3px;line-height:1.5}
+  input[type=text],input[type=email],input[type=date],input[type=url],textarea,select{
+    width:100%;font-family:inherit;font-size:15px;color:var(--ink);background:var(--paper);
+    border:1px solid var(--line);border-radius:10px;padding:12px 14px;transition:border-color .15s ease, box-shadow .15s ease;
+  }
+  textarea{resize:vertical;min-height:84px;line-height:1.6}
+  input:focus,textarea:focus,select:focus{outline:none;border-color:var(--hotspot);box-shadow:0 0 0 3px rgba(225,87,46,.14)}
+  input.bad,textarea.bad,select.bad,.optset.bad{border-color:var(--hotspot);box-shadow:0 0 0 3px rgba(225,87,46,.12)}
+  .err{color:var(--hotspot);font-size:12.5px;margin-top:6px;display:none}
+  .err.show{display:block}
+
+  /* option chips (radio / checkbox) */
+  .optset{display:flex;flex-wrap:wrap;gap:10px;padding:2px;border-radius:10px}
+  .opt{position:relative}
+  .opt input{position:absolute;opacity:0;inset:0;cursor:pointer}
+  .opt span{
+    display:inline-flex;align-items:center;gap:8px;padding:10px 15px;border:1px solid var(--line);
+    border-radius:10px;font-size:14px;cursor:pointer;background:var(--paper);transition:all .15s ease;color:var(--ink-soft);
+  }
+  .opt input:checked + span{border-color:var(--hotspot);background:var(--hotspot-soft);color:var(--ink);font-weight:500}
+  .opt input:focus-visible + span{box-shadow:0 0 0 3px rgba(225,87,46,.18)}
+  .filebox{
+    border:1.5px dashed var(--line);border-radius:12px;padding:18px;background:var(--paper);
+    display:flex;align-items:center;gap:14px;cursor:pointer;transition:border-color .15s ease,background .15s ease;
+  }
+  .filebox:hover{border-color:var(--hotspot);background:var(--hotspot-soft)}
+  .filebox input{display:none}
+  .filebox .ic{font-family:"JetBrains Mono",monospace;font-weight:700;color:var(--hotspot);font-size:13px;border:1px solid var(--line);border-radius:8px;padding:8px 11px;background:var(--card)}
+  .filebox .ft{font-size:13.5px}
+  .filebox .ft b{display:block;color:var(--ink);font-weight:500}
+  .filebox .ft small{color:var(--slate)}
+  .filename{font-size:13px;color:var(--conf-mid);font-weight:500;margin-left:auto;font-family:"JetBrains Mono",monospace}
+
+  .consent{display:flex;gap:12px;align-items:flex-start;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px}
+  .consent input{margin-top:4px;width:18px;height:18px;accent-color:var(--hotspot);flex:none}
+  .consent label{font-size:13px;color:var(--ink-soft);line-height:1.6;cursor:pointer}
+
+  .submit-row{display:flex;flex-wrap:wrap;align-items:center;gap:16px;margin-top:8px}
+  .submit-row .btn{font-size:16px;padding:15px 32px}
+  .submit-row small{font-size:12.5px;color:var(--slate);max-width:36ch}
+  .btn[disabled]{opacity:.55;cursor:default;transform:none!important;box-shadow:none!important}
+  .upload-prog{margin-top:18px;display:flex;align-items:center;gap:14px}
+  .upload-prog .bar{flex:1;height:8px;border-radius:6px;background:var(--paper-2);overflow:hidden;border:1px solid var(--line)}
+  .upload-prog .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--conf-mid),var(--hotspot));transition:width .2s ease}
+  .upload-prog span{font-size:12.5px;color:var(--slate);white-space:nowrap;min-width:108px;text-align:right}
+  .form-err{margin-top:14px;background:var(--hotspot-soft);border:1px solid rgba(225,87,46,.35);color:var(--ink);border-radius:10px;padding:12px 14px;font-size:13.5px;display:none}
+  .form-err.show{display:block}
+
+  /* confirmation */
+  .confirm{display:none;text-align:left}
+  .confirm.show{display:block;animation:rise .5s ease both}
+  .confirm h3{font-family:"Noto Serif SC",serif;font-weight:900;font-size:26px;margin:0 0 10px}
+  .confirm .check{width:46px;height:46px;border-radius:50%;background:var(--conf-mid);display:flex;align-items:center;justify-content:center;color:#fff;font-size:24px;margin-bottom:18px}
+  .summary{
+    background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:18px 20px;
+    font-family:"JetBrains Mono",monospace;font-size:12.5px;line-height:1.85;color:var(--ink-soft);
+    white-space:pre-wrap;max-height:340px;overflow:auto;margin:18px 0;
+  }
+
+  /* ---------- footer ---------- */
+  footer{padding:48px 0 60px}
+  .foot-grid{display:flex;justify-content:space-between;flex-wrap:wrap;gap:24px;align-items:flex-end}
+  .foot-facts{display:flex;gap:34px;flex-wrap:wrap}
+  .fact .k{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--slate)}
+  .fact .v{font-family:"Noto Serif SC",serif;font-weight:700;font-size:18px;margin-top:4px}
+  .fact .v.hot{color:var(--hotspot)}
+  .foot-meta{font-size:12.5px;color:var(--slate);text-align:right;line-height:1.7}
+
+  /* ---------- reveal anim ---------- */
+  .reveal{opacity:0;transform:translateY(18px)}
+  .reveal.in{opacity:1;transform:none;transition:opacity .7s ease, transform .7s cubic-bezier(.2,.7,.2,1)}
+  @keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+  /* ---------- responsive ---------- */
+  @media(max-width:880px){
+    .pipeline{grid-template-columns:1fr 1fr;}
+    .agent{border-left:none;border-top:1px solid var(--line);padding:18px 10px 20px}
+    .agent:first-child{border-top:none}
+    .pipe-track{display:none}
+    .caps,.split{grid-template-columns:1fr}
+  }
+  @media(max-width:560px){
+    .wrap{padding:0 18px}
+    .hero{padding:48px 0 30px}
+    .pipeline{grid-template-columns:1fr}
+    .grid-2{grid-template-columns:1fr}
+    .topbar .brand small{display:none}
+  }
+  @media(prefers-reduced-motion:reduce){
+    *{scroll-behavior:auto!important}
+    .reveal{opacity:1!important;transform:none!important;transition:none!important}
+    .btn:hover{transform:none}
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="wrap">
+    <div class="brand"><span class="dot"></span>DeeCamp 2026 <small>· AI for Science · 上海</small></div>
+    <div class="deadline mono">报名截止 <b>7 / 13</b> <span>· 全程投入 7 月初–8 月中</span></div>
+  </div>
+</div>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="wrap">
+    <div class="hero-body">
+      <div class="track-tag"><i></i>赛题 · SBDD × MACHINE LEARNING</div>
+      <h1>多肽对接<br>AI 打分与重排序
+        <span class="en">Docking + AI Scoring · Re-ranking Peptide&nbsp;Docking Poses</span>
+      </h1>
+      <p class="lede">多肽（尤其环肽）构象自由度高，docking 与亲和力预测远比小分子困难；传统方法（AutoDock CrankPep、Rosetta FlexPepDock）<b>算力贵、打分函数精度与泛化有限</b>。本赛题用机器学习<b>对 docking pose 打分与重排序</b>，构建 Docking + AI Scoring 混合系统，让近天然构象浮到 Top。</p>
+      <div class="cta-row">
+        <a class="btn hot" href="#apply">报名这个赛题 →</a>
+        <span class="meta-chip mono">截止 <b>7月13日</b> · base 上海（线下可选）</span>
+      </div>
+    </div>
+
+    <div class="hero-spec mono">
+      <span><i>赛题方向</i>AI + 生命科学 · SBDD</span>
+      <span><i>报名截止</i><b>2026 / 07 / 13</b></span>
+      <span><i>训练周期</i>7 月初 – 8 月中</span>
+      <span><i>线下 base</i>上海（可选）</span>
+    </div>
+  </div>
+</header>
+
+<!-- PARADIGM -->
+<section class="section">
+  <div class="wrap reveal">
+    <div class="sec-head"><span class="num">01</span><h2>为什么多肽对接这么难</h2></div>
+    <p class="prose">在基于结构的药物设计（SBDD）中，多肽与环肽是靶向蛋白–蛋白相互作用（PPI）的重要药物形式。但相比小分子，多肽的<b>构象自由度高得多</b>，使 docking 与 binding affinity 预测格外困难。当前主流方法——AutoDock CrankPep、Rosetta FlexPepDock——<b>计算成本高、打分函数精度有限、泛化性差</b>。本赛题结合 AI 对传统多肽（环肽）docking 流程加速与优化，核心问题是：<b>如何用机器学习对 docking pose 打分与重排序（re-ranking）</b>，提升结合构象预测的效率与准确性。</p>
+  </div>
+</section>
+
+<!-- PIPELINE (signature) -->
+<section class="section">
+  <div class="wrap reveal">
+    <div class="sec-head"><span class="num">02</span><h2>Docking + AI Scoring 混合系统</h2><span class="eyebrow" style="margin-left:auto">生成位姿 → 重排序 · 混合流水线</span></div>
+    <div class="pipe-track"></div>
+    <div class="pipeline">
+      <div class="agent" data-k="gen">
+        <div class="idx">01</div><div class="node"></div>
+        <div class="name">Generate<em>生成位姿</em></div>
+        <div class="desc">AutoDock CrankPep / Rosetta FlexPepDock 产出大量候选 pose</div>
+      </div>
+      <div class="agent" data-k="rep">
+        <div class="idx">02</div><div class="node"></div>
+        <div class="name">Represent<em>结构表示</em></div>
+        <div class="desc">把 pose 与界面提取为分子表示：图 / 几何 / 能量项特征</div>
+      </div>
+      <div class="agent" data-k="critic">
+        <div class="idx">03</div><div class="node"></div>
+        <div class="name">AI Score<em>打分</em></div>
+        <div class="desc">模型给每个 pose 打分（Regression 预测能量 · Ranking 学习排序）</div>
+      </div>
+      <div class="agent" data-k="rank">
+        <div class="idx">04</div><div class="node"></div>
+        <div class="name">Re-rank<em>重排序</em></div>
+        <div class="desc">按 AI 分数重排，让近天然构象浮到 Top</div>
+      </div>
+      <div class="agent" data-k="report">
+        <div class="idx">05</div><div class="node"></div>
+        <div class="name">Benchmark<em>评估对比</em></div>
+        <div class="desc">公开数据集验证，对比 Rosetta/Docking 与 Boltz2/Protenix</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CAPABILITIES -->
+<section class="section">
+  <div class="wrap reveal">
+    <div class="sec-head"><span class="num">03</span><h2>任务拆解</h2></div>
+    <div class="caps">
+      <div class="cap"><span class="k">A</span><p><b>构建 AI 打分模型</b>，对 docking pose 打分；子任务二选一（见下一节）</p></div>
+      <div class="cap"><span class="k">B</span><p>在<b>公开数据集</b>上完成相应任务的评估与验证</p></div>
+      <div class="cap"><span class="k">C</span><p><b>性能对比分析</b>：对比传统方法（Rosetta / Docking 等）与 AI 方法（Boltz2 / Protenix 等）</p></div>
+      <div class="cap"><span class="k">D</span><p>形成<b>可演示的模型与项目报告</b>，并完成最终答辩展示</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- SUBTASKS -->
+<section class="section">
+  <div class="wrap reveal">
+    <div class="sec-head"><span class="num">04</span><h2>打分模型 · 两种子任务</h2><span class="eyebrow" style="margin-left:auto">二选一</span></div>
+    <div class="split">
+      <div class="panel">
+        <h3>Regression · 回归</h3>
+        <p class="prose" style="font-size:15.5px">预测 binding score（如 Rosetta energy）。目标是让模型输出的分数<b>逼近真实结合能</b>，从而用打分高低筛选构象。</p>
+        <div class="tags">
+          <span class="tag">预测 Rosetta energy</span><span class="tag">连续值回归</span>
+          <span class="tag hi">RMSE · Pearson</span>
+        </div>
+      </div>
+      <div class="panel">
+        <h3>Ranking · 排序</h3>
+        <p class="prose" style="font-size:15.5px">对<b>同一 peptide 的多个 poses 排序</b>，把近天然构象排到前面——直接服务于 re-ranking 这一核心目标。</p>
+        <div class="tags">
+          <span class="tag">同一 peptide 内排序</span><span class="tag">Learning-to-Rank</span>
+          <span class="tag hi">Top-k · Spearman</span>
+        </div>
+      </div>
+    </div>
+    <p class="note" style="max-width:none;margin-top:24px">评估与对比：在公开数据集上验证后，与传统方法（<b>Rosetta / Docking</b>）和 AI 方法（<b>Boltz2 / Protenix</b>）做性能比较分析，最终交付可演示模型 + 项目报告 + 答辩展示。</p>
+  </div>
+</section>
+
+<!-- APPLICANT PROFILE -->
+<section class="section">
+  <div class="wrap reveal">
+    <div class="sec-head"><span class="num">05</span><h2>报名要求 &amp; 加分项</h2></div>
+    <div class="split">
+      <div class="panel">
+        <h3>你需要具备</h3>
+        <p class="note">计算机 / 人工智能、计算生物学 / 计算化学、生物信息学等相关专业，<b>良好的编程能力</b>。</p>
+        <p class="note">熟悉机器学习 / 深度学习基本方法，具备 <b>PyTorch</b> 等框架使用经验。</p>
+        <p class="note">对大模型、<b>分子表示学习</b>、药物研发 AI 等方向感兴趣。</p>
+      </div>
+      <div class="panel">
+        <h3>加分项</h3>
+        <p class="note">有以下方向相关经验者<b>优先</b>：</p>
+        <div class="tags">
+          <span class="tag hi">结构药物设计 SBDD</span><span class="tag hi">分子生成模型</span>
+          <span class="tag hi">分子对接 Docking</span><span class="tag hi">MD 模拟</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- APPLY FORM -->
+<section class="form-section" id="apply">
+  <div class="wrap">
+    <div class="form-card reveal">
+
+      <!-- form view -->
+      <div id="formView">
+        <div class="form-head">
+          <span class="eyebrow">DeeCamp 2026 · 报名</span>
+          <h2>报名「多肽对接 AI 打分与重排序」</h2>
+        </div>
+        <div class="locked-track">
+          <span class="lk">赛题已锁定</span>
+          <div><b>AI + 生命科学 · Docking + AI Scoring for Peptide Pose Re-ranking</b><br>
+          <small style="color:var(--slate)">通过本页报名即默认意向此赛题；赛题确认仍以 DeeCamp 小助手最终确认为准。</small></div>
+        </div>
+
+        <form id="applyForm" novalidate>
+          <!-- 基本信息 -->
+          <fieldset>
+            <legend>基本信息</legend>
+            <div class="grid-2">
+              <div class="field">
+                <label class="lbl" for="name">姓名<span class="req">*</span></label>
+                <input type="text" id="name" name="name" autocomplete="name">
+                <div class="err" data-for="name">请填写姓名</div>
+              </div>
+              <div class="field">
+                <label class="lbl">性别<span class="req">*</span></label>
+                <div class="optset" data-radio="gender">
+                  <label class="opt"><input type="radio" name="gender" value="男"><span>男</span></label>
+                  <label class="opt"><input type="radio" name="gender" value="女"><span>女</span></label>
+                </div>
+                <div class="err" data-for="gender">请选择性别</div>
+              </div>
+            </div>
+            <div class="grid-2">
+              <div class="field">
+                <label class="lbl" for="dob">出生年月日<span class="req">*</span></label>
+                <input type="date" id="dob" name="dob">
+                <div class="err" data-for="dob">请选择出生日期</div>
+              </div>
+              <div class="field">
+                <label class="lbl" for="wechat">微信号<span class="req">*</span></label>
+                <input type="text" id="wechat" name="wechat" autocomplete="off">
+                <div class="err" data-for="wechat">请填写微信号</div>
+              </div>
+            </div>
+            <div class="field">
+              <label class="lbl" for="email">邮箱<span class="req">*</span></label>
+              <input type="email" id="email" name="email" autocomplete="email" placeholder="name@example.com">
+              <div class="err" data-for="email">请填写有效邮箱</div>
+            </div>
+          </fieldset>
+
+          <!-- 学术背景 -->
+          <fieldset>
+            <legend>学术背景</legend>
+            <div class="field">
+              <label class="lbl" for="edu">教育经历<span class="req">*</span>
+                <span class="hint">从本科起按时间倒序填写，例：本科 清华大学 计算机学院 CS 专业 2016–2022</span>
+              </label>
+              <textarea id="edu" name="edu"></textarea>
+              <div class="err" data-for="edu">请填写教育经历</div>
+            </div>
+            <div class="grid-2">
+              <div class="field">
+                <label class="lbl" for="gh">GitHub / Hugging Face <span class="hint">选填，主页链接</span></label>
+                <input type="url" id="gh" name="gh" placeholder="https://github.com/...">
+              </div>
+              <div class="field">
+                <label class="lbl" for="scholar">Google Scholar / ResearchGate <span class="hint">选填</span></label>
+                <input type="url" id="scholar" name="scholar" placeholder="https://scholar.google.com/...">
+              </div>
+            </div>
+            <div class="field">
+              <label class="lbl" for="papers">代表性论文 / 成果摘要 <span class="hint">选填，2–3 篇，用于评估跨学科科研潜力</span></label>
+              <textarea id="papers" name="papers" style="min-height:64px"></textarea>
+            </div>
+            <div class="field">
+              <label class="lbl" for="awards">重大奖项 / 学术荣誉 / 开源项目 <span class="hint">选填，如 ACM-ICPC、Kaggle 排名、奖学金、开源贡献等</span></label>
+              <textarea id="awards" name="awards" style="min-height:64px"></textarea>
+            </div>
+          </fieldset>
+
+          <!-- 方向与期待 -->
+          <fieldset>
+            <legend>方向与期待</legend>
+            <div class="field">
+              <label class="lbl">与赛题相关的科研交集 / 技术栈<span class="req">*</span>
+                <span class="hint">多选 · 帮助组委会评估你与本赛题的契合度</span>
+              </label>
+              <div class="optset" data-check="skills" data-min="1">
+                <label class="opt"><input type="checkbox" name="skills" value="PyTorch / 深度学习"><span>PyTorch / 深度学习</span></label>
+                <label class="opt"><input type="checkbox" name="skills" value="分子表示学习 / 图神经网络 GNN"><span>分子表示 / GNN</span></label>
+                <label class="opt"><input type="checkbox" name="skills" value="分子对接 Docking (AutoDock / Rosetta)"><span>分子对接 Docking</span></label>
+                <label class="opt"><input type="checkbox" name="skills" value="MD 模拟"><span>MD 模拟</span></label>
+                <label class="opt"><input type="checkbox" name="skills" value="Rosetta / 打分函数 / 结合能"><span>Rosetta / 打分函数</span></label>
+                <label class="opt"><input type="checkbox" name="skills" value="结构药物设计 SBDD"><span>SBDD / 药物设计</span></label>
+                <label class="opt"><input type="checkbox" name="skills" value="分子生成模型"><span>分子生成模型</span></label>
+                <label class="opt"><input type="checkbox" name="skills" value="Learning-to-Rank / 排序学习"><span>Learning-to-Rank</span></label>
+                <label class="opt"><input type="checkbox" name="skills" value="对分子表示学习 / 药物研发 AI 有极强兴趣"><span>暂无明确交集，兴趣极强</span></label>
+              </div>
+              <div class="err" data-for="skills">请至少选择一项</div>
+            </div>
+            <div class="field">
+              <label class="lbl">报名本项目的主要目标<span class="req">*</span><span class="hint">多选</span></label>
+              <div class="optset" data-check="goals" data-min="1">
+                <label class="opt"><input type="checkbox" name="goals" value="顶尖 AI4S 企业 / 大厂研究机构实习与校招直通 Offer"><span>实习 / 校招 Offer</span></label>
+                <label class="opt"><input type="checkbox" name="goals" value="结识跨学科合伙人，早期项目投资孵化 / 创业"><span>合伙人 / 创业孵化</span></label>
+                <label class="opt"><input type="checkbox" name="goals" value="聆听学术与产业大师授课，提升前沿科研与应用能力"><span>大师课 / 能力提升</span></label>
+                <label class="opt"><input type="checkbox" name="goals" value="获得免费高配算力，验证真实科研课题"><span>免费算力</span></label>
+              </div>
+              <div class="err" data-for="goals">请至少选择一项</div>
+            </div>
+            <div class="field">
+              <label class="lbl">从何种渠道了解到 DeeCamp 2026？<span class="req">*</span></label>
+              <div class="optset" data-radio="channel">
+                <label class="opt"><input type="radio" name="channel" value="官网 / 主办 / 承办公众号"><span>官网 / 公众号</span></label>
+                <label class="opt"><input type="radio" name="channel" value="学联 / 创协公众号"><span>学联 / 创协</span></label>
+                <label class="opt"><input type="radio" name="channel" value="朋友圈 / 微信群"><span>朋友圈 / 群</span></label>
+                <label class="opt"><input type="radio" name="channel" value="朋友 / 同学推荐"><span>朋友推荐</span></label>
+                <label class="opt"><input type="radio" name="channel" value="社交媒体 (小红书/微博/知乎/B站)"><span>社交媒体</span></label>
+                <label class="opt"><input type="radio" name="channel" value="BioTender"><span>BioTender</span></label>
+                <label class="opt"><input type="radio" name="channel" value="其他"><span>其他</span></label>
+              </div>
+              <div class="err" data-for="channel">请选择了解渠道</div>
+            </div>
+          </fieldset>
+
+          <!-- 材料 -->
+          <fieldset>
+            <legend>申请材料</legend>
+            <div class="field">
+              <label class="lbl">简历<span class="req">*</span><span class="hint">PDF / Word，建议用电脑上传</span></label>
+              <label class="filebox" for="cv">
+                <span class="ic">CV</span>
+                <span class="ft"><b>上传简历文件</b><small>支持 .pdf .doc .docx</small></span>
+                <span class="filename" id="cvName"></span>
+                <input type="file" id="cv" name="cv" accept=".pdf,.doc,.docx">
+              </label>
+              <div class="err" data-for="cv">请上传简历</div>
+            </div>
+            <div class="field">
+              <label class="lbl">3 分钟自我介绍视频<span class="req">*</span>
+                <span class="hint">可上传文件，或在下方粘贴视频链接（B站 / 网盘等任一即可）</span>
+              </label>
+              <label class="filebox" for="video">
+                <span class="ic">▶</span>
+                <span class="ft"><b>上传视频文件</b><small>支持 .mp4 .mov，≤ 3 min</small></span>
+                <span class="filename" id="videoName"></span>
+                <input type="file" id="video" name="video" accept="video/*">
+              </label>
+              <input type="url" id="videoUrl" name="videoUrl" placeholder="或粘贴视频链接 https://..." style="margin-top:10px">
+              <div class="err" data-for="video">请上传视频文件或粘贴视频链接</div>
+            </div>
+          </fieldset>
+
+          <!-- 组队与投入 -->
+          <fieldset>
+            <legend>组队与投入</legend>
+            <div class="field">
+              <label class="lbl">团队领导力与带队意愿<span class="req">*</span></label>
+              <div class="optset" data-radio="lead">
+                <label class="opt"><input type="radio" name="lead" value="是（有带队意愿）"><span>有带队意愿</span></label>
+                <label class="opt"><input type="radio" name="lead" value="否（核心组员，聚焦项目合作）"><span>核心组员</span></label>
+                <label class="opt"><input type="radio" name="lead" value="可调剂（服从组委会统一调配）"><span>可调剂</span></label>
+              </div>
+              <div class="err" data-for="lead">请选择带队意愿</div>
+            </div>
+            <div class="field">
+              <label class="lbl">报名方式<span class="req">*</span></label>
+              <div class="optset" data-radio="mode">
+                <label class="opt"><input type="radio" name="mode" value="个人报名"><span>个人报名</span></label>
+                <label class="opt"><input type="radio" name="mode" value="组队报名"><span>组队报名</span></label>
+              </div>
+              <div class="err" data-for="mode">请选择报名方式</div>
+            </div>
+            <div class="field">
+              <label class="lbl">是否愿意参与上海线下实践？<span class="req">*</span>
+                <span class="hint">无法线下不影响审核</span>
+              </label>
+              <div class="optset" data-radio="offline">
+                <label class="opt"><input type="radio" name="offline" value="是（训练营期间可在上海线下）"><span>可全程线下</span></label>
+                <label class="opt"><input type="radio" name="offline" value="部分时间可线下（开营 / 结营等节点）"><span>部分节点线下</span></label>
+                <label class="opt"><input type="radio" name="offline" value="否（仅线上参与）"><span>仅线上</span></label>
+              </div>
+              <div class="err" data-for="offline">请选择线下意愿</div>
+            </div>
+            <div class="field">
+              <label class="lbl">全程投入承诺（7 月初–8 月中）<span class="req">*</span></label>
+              <div class="optset" data-radio="commit">
+                <label class="opt"><input type="radio" name="commit" value="郑重承诺全程参与，不无故退出"><span>承诺全程参与</span></label>
+                <label class="opt"><input type="radio" name="commit" value="不确定 / 可能中途退出"><span>不确定</span></label>
+              </div>
+              <div class="err" data-for="commit">请确认投入承诺</div>
+            </div>
+          </fieldset>
+
+          <!-- 同意书 -->
+          <fieldset style="margin-bottom:24px">
+            <div class="consent">
+              <input type="checkbox" id="consent" name="consent">
+              <label for="consent">本人同意，以上填写的全部个人信息、提交的文档及视频内容仅用于本次 DeeCamp 活动及内部审核，并授权活动方在征得同意后纳入企业人才库（如有后续招聘或项目匹配，将依规联系本人）；本人已知悉该授权不影响日后撤回的权利。<span style="color:var(--hotspot)">*</span></label>
+            </div>
+            <div class="err" data-for="consent" style="margin-top:8px">请阅读并勾选同意书</div>
+          </fieldset>
+
+          <div class="submit-row">
+            <button type="submit" class="btn hot" id="submitBtn">提交报名 →</button>
+            <small>提交后请保存 DeeCamp 小助手二维码，赛题意愿以小助手确认为准。</small>
+          </div>
+          <div class="upload-prog" id="uploadProg" hidden>
+            <div class="bar"><i id="progFill"></i></div>
+            <span class="mono" id="progText">准备上传…</span>
+          </div>
+          <div class="form-err" id="formErr"></div>
+        </form>
+      </div>
+
+      <!-- confirmation view -->
+      <div class="confirm" id="confirmView">
+        <div class="check">✓</div>
+        <h3>报名信息已整理完成</h3>
+        <p class="prose" style="font-size:15px">下面是你这份报名的摘要。本页为静态页面，<b>不会自动提交到组委会</b>——请点击「复制报名信息」，连同简历 / 视频，按官方指引提交并添加 DeeCamp 小助手确认赛题意愿。</p>
+        <div class="summary mono" id="summaryBox"></div>
+        <div class="submit-row">
+          <button class="btn hot" id="copyBtn" type="button">复制报名信息</button>
+          <button class="btn" id="editBtn" type="button" style="background:transparent;color:var(--ink);border:1px solid var(--line)">返回修改</button>
+          <small id="copyHint"></small>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="wrap foot-grid">
+    <div class="foot-facts">
+      <div class="fact"><div class="k">报名截止</div><div class="v hot">2026 / 07 / 13</div></div>
+      <div class="fact"><div class="k">训练周期</div><div class="v">7 月初 – 8 月中</div></div>
+      <div class="fact"><div class="k">线下 base</div><div class="v">上海（可选）</div></div>
+      <div class="fact"><div class="k">赛题方向</div><div class="v">AI + 生命科学 · SBDD</div></div>
+    </div>
+    <div class="foot-meta mono">
+      DeeCamp 2026 · AI for Science<br>
+      多肽对接 AI 打分与重排序 / Docking + AI Scoring<br>
+      赛题意愿最终以 DeeCamp 小助手确认为准
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ================= 后端配置 =================
+   * 把 ENDPOINT 改成你的接收接口（见随附的 submit.php）。
+   * 留空 '' 时页面进入「预览模式」：只生成可复制的摘要、不真正上传，
+   * 方便先部署静态页 / 在没有后端时演示。
+   * 例：ENDPOINT = 'https://biotender.online/deecamp/submit.php';
+   */
+  var ENDPOINT = 'http://123.57.181.164/submit.php';
+  var MAX_VIDEO_MB = 300;   // 视频体积上限（需与服务器 nginx/php 上限一致）
+  var MAX_CV_MB = 15;
+
+  // ---- scroll reveal ----
+  var io = new IntersectionObserver(function(es){
+    es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target);} });
+  },{threshold:.12});
+  document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+
+  // ---- file name display ----
+  function bindFile(id, labelId){
+    var inp=document.getElementById(id), out=document.getElementById(labelId);
+    if(!inp) return;
+    inp.addEventListener('change',function(){
+      out.textContent = inp.files && inp.files[0] ? inp.files[0].name : '';
+      clearErr(id);
+    });
+  }
+  bindFile('cv','cvName'); bindFile('video','videoName');
+
+  var form=document.getElementById('applyForm');
+  var formView=document.getElementById('formView');
+  var confirmView=document.getElementById('confirmView');
+
+  function showErr(key){
+    var box=form.querySelector('.err[data-for="'+key+'"]');
+    if(box) box.classList.add('show');
+  }
+  function clearErr(key){
+    var box=form.querySelector('.err[data-for="'+key+'"]');
+    if(box) box.classList.remove('show');
+    var el=document.getElementById(key);
+    if(el) el.classList.remove('bad');
+  }
+  // live clear on change
+  form.addEventListener('input', function(e){
+    var t=e.target;
+    if(t.name) clearErr(t.name);
+    if(t.id) clearErr(t.id);
+  });
+  form.addEventListener('change', function(e){
+    var t=e.target;
+    if(t.name) clearErr(t.name);
+  });
+
+  function val(id){ var e=document.getElementById(id); return e?e.value.trim():''; }
+  function radioVal(name){ var r=form.querySelector('input[name="'+name+'"]:checked'); return r?r.value:''; }
+  function checkVals(name){ return Array.prototype.map.call(form.querySelectorAll('input[name="'+name+'"]:checked'),function(c){return c.value;}); }
+  function emailOk(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
+
+  form.addEventListener('submit', function(ev){
+    ev.preventDefault();
+    var ok=true;
+    var formErr=document.getElementById('formErr');
+    formErr.classList.remove('show');
+    function fail(key, cond, markId){
+      if(cond){ showErr(key); ok=false; var el=document.getElementById(markId||key); if(el) el.classList.add('bad'); }
+    }
+    fail('name', !val('name'));
+    fail('gender', !radioVal('gender'));
+    fail('dob', !val('dob'));
+    fail('wechat', !val('wechat'));
+    fail('email', !emailOk(val('email')));
+    fail('edu', !val('edu'));
+    fail('skills', checkVals('skills').length===0);
+    fail('goals', checkVals('goals').length===0);
+    fail('channel', !radioVal('channel'));
+    // cv: file required
+    var cv=document.getElementById('cv');
+    fail('cv', !(cv.files && cv.files[0]));
+    // video: file OR url
+    var vf=document.getElementById('video');
+    var hasVideoFile = vf.files && vf.files[0];
+    var hasVideo = hasVideoFile || val('videoUrl');
+    fail('video', !hasVideo);
+    fail('lead', !radioVal('lead'));
+    fail('mode', !radioVal('mode'));
+    fail('offline', !radioVal('offline'));
+    fail('commit', !radioVal('commit'));
+    var consent=document.getElementById('consent');
+    fail('consent', !consent.checked);
+
+    // size guards
+    if(cv.files && cv.files[0] && cv.files[0].size > MAX_CV_MB*1048576){
+      showErr('cv'); document.getElementById('cv').classList.add('bad'); ok=false;
+      formErr.textContent='简历文件超过 '+MAX_CV_MB+'MB，请压缩后重试。'; formErr.classList.add('show');
+    }
+    if(hasVideoFile && vf.files[0].size > MAX_VIDEO_MB*1048576){
+      showErr('video'); ok=false;
+      formErr.textContent='视频文件超过 '+MAX_VIDEO_MB+'MB。请压缩，或改用「粘贴视频链接」提交。'; formErr.classList.add('show');
+    }
+
+    if(!ok){
+      var firstBad=form.querySelector('.err.show') || formErr;
+      if(firstBad) firstBad.scrollIntoView({behavior:'smooth',block:'center'});
+      return;
+    }
+
+    // build human-readable summary (used in preview + as copy text)
+    var cvName = cv.files[0].name;
+    var videoStr = hasVideoFile ? vf.files[0].name : val('videoUrl');
+    var fields = {
+      track:'多肽对接 AI 打分与重排序 (Docking + AI Scoring for Peptide Pose Re-ranking)',
+      name:val('name'), gender:radioVal('gender'), dob:val('dob'),
+      wechat:val('wechat'), email:val('email'), edu:val('edu'),
+      github:val('gh'), scholar:val('scholar'), papers:val('papers'), awards:val('awards'),
+      skills:checkVals('skills').join(' · '), goals:checkVals('goals').join(' · '),
+      channel:radioVal('channel'), lead:radioVal('lead'), mode:radioVal('mode'),
+      offline:radioVal('offline'), commit:radioVal('commit'),
+      videoUrl: hasVideoFile ? '' : val('videoUrl'),
+      consent:'已勾选'
+    };
+    var L=[];
+    L.push('DeeCamp 2026 · AI for Science · 上海');
+    L.push('赛题：'+fields.track);
+    L.push('────────────────────────');
+    L.push('姓名：'+fields.name+'  ·  性别：'+fields.gender+'  ·  出生：'+fields.dob);
+    L.push('微信：'+fields.wechat+'  ·  邮箱：'+fields.email);
+    L.push('');
+    L.push('教育经历：'); L.push(fields.edu);
+    if(fields.github) L.push('GitHub / HF：'+fields.github);
+    if(fields.scholar) L.push('Scholar / RG：'+fields.scholar);
+    if(fields.papers){ L.push('代表性成果：'); L.push(fields.papers); }
+    if(fields.awards){ L.push('奖项 / 荣誉：'); L.push(fields.awards); }
+    L.push('');
+    L.push('科研交集 / 技术栈：'+fields.skills);
+    L.push('目标期待：'+fields.goals);
+    L.push('了解渠道：'+fields.channel);
+    L.push('');
+    L.push('简历：'+cvName);
+    L.push('自我介绍视频：'+videoStr);
+    L.push('');
+    L.push('带队意愿：'+fields.lead);
+    L.push('报名方式：'+fields.mode);
+    L.push('线下实践：'+fields.offline);
+    L.push('投入承诺：'+fields.commit);
+    L.push('信息使用同意：已勾选');
+    var summary=L.join('\n');
+
+    // ---------- PREVIEW MODE (no endpoint set) ----------
+    if(!ENDPOINT){
+      goConfirm(summary, true, null);
+      return;
+    }
+
+    // ---------- REAL UPLOAD ----------
+    var fd=new FormData();
+    Object.keys(fields).forEach(function(k){ fd.append(k, fields[k]); });
+    fd.append('cv', cv.files[0], cv.files[0].name);
+    if(hasVideoFile) fd.append('video', vf.files[0], vf.files[0].name);
+
+    var btn=document.getElementById('submitBtn');
+    var prog=document.getElementById('uploadProg');
+    var fill=document.getElementById('progFill');
+    var ptext=document.getElementById('progText');
+    btn.disabled=true; btn.textContent='提交中…';
+    prog.hidden=false; fill.style.width='0%'; ptext.textContent='准备上传…';
+
+    var xhr=new XMLHttpRequest();
+    xhr.open('POST', ENDPOINT, true);
+    xhr.upload.onprogress=function(e){
+      if(e.lengthComputable){
+        var pct=Math.round(e.loaded/e.total*100);
+        fill.style.width=pct+'%';
+        ptext.textContent= pct<100 ? ('上传中 '+pct+'%') : '服务器处理中…';
+      }
+    };
+    xhr.onload=function(){
+      btn.disabled=false; btn.textContent='提交报名 →';
+      var data=null; try{ data=JSON.parse(xhr.responseText); }catch(e){}
+      if(xhr.status>=200 && xhr.status<300 && data && data.ok){
+        prog.hidden=true;
+        goConfirm(summary, false, data.id || null);
+      } else {
+        prog.hidden=true;
+        var msg=(data && data.error) ? data.error : ('提交失败（HTTP '+xhr.status+'）。请稍后重试，或改用「粘贴视频链接」减小上传体积。');
+        formErr.textContent=msg; formErr.classList.add('show');
+        formErr.scrollIntoView({behavior:'smooth',block:'center'});
+      }
+    };
+    xhr.onerror=function(){
+      btn.disabled=false; btn.textContent='提交报名 →'; prog.hidden=true;
+      formErr.textContent='网络中断，提交未完成。请检查网络后重试。';
+      formErr.classList.add('show');
+    };
+    xhr.send(fd);
+  });
+
+  // confirmation view: preview=true 仅生成摘要；preview=false 为真实提交成功
+  function goConfirm(summary, preview, id){
+    var head=confirmView.querySelector('h3');
+    var desc=confirmView.querySelector('p.prose');
+    if(preview){
+      head.textContent='报名信息已整理完成';
+      desc.innerHTML='当前为<b>预览模式</b>（未配置后端）。下面是你这份报名的摘要——配置 ENDPOINT 后即可真正上传简历与视频。';
+    } else {
+      head.textContent='报名已提交成功';
+      desc.innerHTML='我们已收到你的报名'+(id?('，编号 <b>'+id+'</b>'):'')+'。请添加 DeeCamp 小助手确认赛题意愿；下方摘要可自行留存。';
+    }
+    document.getElementById('summaryBox').textContent=summary;
+    formView.style.display='none';
+    confirmView.classList.add('show');
+    confirmView.scrollIntoView({behavior:'smooth',block:'start'});
+
+    document.getElementById('copyBtn').onclick=function(){
+      var hint=document.getElementById('copyHint');
+      function done(){ hint.textContent='已复制 ✓'; hint.style.color='var(--conf-mid)'; }
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(summary).then(done, function(){ fallback(); });
+      } else { fallback(); }
+      function fallback(){
+        var ta=document.createElement('textarea'); ta.value=summary; document.body.appendChild(ta);
+        ta.select(); try{document.execCommand('copy'); done();}catch(e){ hint.textContent='复制失败，请手动选择'; }
+        document.body.removeChild(ta);
+      }
+    };
+  }
+
+  document.getElementById('editBtn').onclick=function(){
+    confirmView.classList.remove('show');
+    formView.style.display='block';
+    formView.scrollIntoView({behavior:'smooth',block:'start'});
+  };
+})();
+</script>
+</body>
+</html>
